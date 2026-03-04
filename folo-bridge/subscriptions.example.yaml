@@ -1,0 +1,217 @@
+subscriptions:
+  - name: 36氪
+    url: https://36kr.com/feed
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "E 知名主流媒体（精华）", "商业运营", "财经"]
+
+  - name: 虎嗅网
+    url: https://www.huxiu.com/rss/0.xml
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "E 知名主流媒体（精华）", "商业运营", "科技商业"]
+
+  - name: 第一财经周刊
+    url: https://plink.anyfeeder.com/weixin/CBNweekly2008
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "E 知名主流媒体（精华）", "商业运营", "财经"]
+
+  - name: 界面新闻-商业
+    url: https://plink.anyfeeder.com/jiemian/business
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "商业运营", "商业新闻"]
+
+  - name: 经济观察网
+    url: https://plink.anyfeeder.com/eeo
+    city: 重庆市
+    district: ""
+    enabled: false
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "E 知名主流媒体（精华）", "财经", "商业观察"]
+
+  - name: 财新网
+    url: https://plink.anyfeeder.com/weixin/caixinwang
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "E 知名主流媒体（精华）", "财经", "深度报道"]
+
+  - name: 华尔街日报中文
+    url: https://cn.wsj.com/zh-hans/rss
+    city: 重庆市
+    district: ""
+    enabled: false
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "国际财经", "商业运营"]
+
+  - name: 路透中文
+    url: https://plink.anyfeeder.com/reuters/cn
+    city: 重庆市
+    district: ""
+    enabled: false
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "国际财经", "商业运营"]
+
+  - name: 财富中文网
+    url: https://plink.anyfeeder.com/fortunechina
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "商业管理", "财经"]
+
+  - name: 经济日报
+    url: https://plink.anyfeeder.com/jingjiribao
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "宏观经济", "商业运营"]
+
+  - name: 21世纪经济报道
+    url: https://plink.anyfeeder.com/weixin/jjbd21
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["A 商业运营 / 商业管理 / 财经主流媒体", "财经", "商业管理"]
+
+  - name: MIT 科技评论
+    url: https://plink.anyfeeder.com/mittrchina/hot
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["B 科技 × 城市 × 产业运营", "科技", "产业运营"]
+
+  - name: InfoQ
+    url: https://plink.anyfeeder.com/infoq/recommend
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["B 科技 × 城市 × 产业运营", "科技", "数字化"]
+
+  - name: 雷峰网
+    url: https://rsshub.app/leiphone/newsflash
+    city: 重庆市
+    district: ""
+    enabled: false
+    tags: ["B 科技 × 城市 × 产业运营", "科技", "创新"]
+
+  - name: FreeBuf
+    url: https://plink.anyfeeder.com/freebuf
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["B 科技 × 城市 × 产业运营", "科技", "安全"]
+
+  - name: 腾讯科技
+    url: https://plink.anyfeeder.com/weixin/qqtech
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["B 科技 × 城市 × 产业运营", "科技", "互联网"]
+
+  - name: 人民日报
+    url: https://plink.anyfeeder.com/people
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["C 时政 / 城市治理 / 公共管理", "E 知名主流媒体（精华）", "时政", "城市治理"]
+
+  - name: 新华社
+    url: https://plink.anyfeeder.com/weixin/newsxinhua
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["C 时政 / 城市治理 / 公共管理", "E 知名主流媒体（精华）", "时政", "公共管理"]
+
+  - name: 澎湃新闻
+    url: https://plink.anyfeeder.com/thepaper
+    city: 重庆市
+    district: ""
+    enabled: false
+    tags: ["C 时政 / 城市治理 / 公共管理", "E 知名主流媒体（精华）", "时政", "城市观察"]
+
+  - name: 南方周末
+    url: https://plink.anyfeeder.com/infzm/news
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["C 时政 / 城市治理 / 公共管理", "E 知名主流媒体（精华）", "公共管理", "深度报道"]
+
+  - name: 参考消息
+    url: https://plink.anyfeeder.com/weixin/ckxxwx
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["C 时政 / 城市治理 / 公共管理", "时政", "国际观察"]
+
+  - name: 央视新闻
+    url: https://plink.anyfeeder.com/weixin/cctvnewscenter
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["C 时政 / 城市治理 / 公共管理", "时政", "公共治理"]
+
+  - name: 光明日报
+    url: https://plink.anyfeeder.com/guangmingribao
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["C 时政 / 城市治理 / 公共管理", "公共管理", "政策"]
+
+  - name: 半月谈
+    url: https://plink.anyfeeder.com/weixin/banyuetan-weixin
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["C 时政 / 城市治理 / 公共管理", "公共治理", "政策解读"]
+
+  - name: 中国日报
+    url: https://plink.anyfeeder.com/chinadaily/china
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["C 时政 / 城市治理 / 公共管理", "宏观", "公共管理"]
+
+  - name: 理想生活实验室
+    url: https://www.toodaylab.com/feed
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["D 消费趋势 / 城市新业态", "消费趋势", "城市新业态"]
+
+  - name: 极客公园
+    url: https://plink.anyfeeder.com/geekpark
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["D 消费趋势 / 城市新业态", "消费趋势", "科技消费"]
+
+  - name: 爱范儿
+    url: https://www.ifanr.com/feed
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["D 消费趋势 / 城市新业态", "消费趋势", "新业态"]
+
+  - name: Vista看天下
+    url: https://plink.anyfeeder.com/weixin/vistaweek
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["D 消费趋势 / 城市新业态", "消费趋势", "城市观察"]
+
+  - name: 新世相
+    url: https://plink.anyfeeder.com/weixin/thefair2
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["D 消费趋势 / 城市新业态", "消费趋势", "新业态"]
+
+  - name: 界面新闻
+    url: https://plink.anyfeeder.com/jiemian/news
+    city: 重庆市
+    district: ""
+    enabled: true
+    tags: ["E 知名主流媒体（精华）", "时政", "财经", "综合资讯"]

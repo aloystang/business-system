@@ -1,0 +1,58 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1400' height='900' viewBox='0 0 1400 900'>
+<defs>
+  <marker id='arrow' markerWidth='10' markerHeight='10' refX='8' refY='3' orient='auto' markerUnits='strokeWidth'>
+    <path d='M0,0 L0,6 L9,3 z' fill='#94a3b8'/>
+  </marker>
+</defs>
+
+<style>
+  .title { font: 700 22px 'Inter', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; fill: #0f172a; }
+  .stage-title { font: 700 16px 'Inter', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; fill: #0f172a; }
+  .text { font: 12px 'Inter', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; fill: #334155; }
+  .muted { font: 12px 'Inter', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; fill: #64748b; }
+  .box { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.2; rx: 14; }
+  .support { fill: #f8fafc; stroke: #e2e8f0; stroke-width: 1.2; rx: 16; }
+  .arrow { stroke: #94a3b8; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+</style>
+
+<text x='60' y='60' class='title'>模块树</text>
+<rect x='600' y='100' width='220' height='46' class='box'/>
+<text x='618' y='130' class='stage-title'>系统总览</text>
+<rect x='80' y='220' width='220' height='40' class='box'/>
+<text x='94' y='246' class='stage-title'>策划咨询</text>
+<path class='arrow' d='M710 146 L190 220'/>
+<text x='94' y='280' class='text'>• 数据采集</text>
+<text x='94' y='306' class='text'>• 项目筛选</text>
+<text x='94' y='332' class='text'>• 项目测算</text>
+<text x='94' y='358' class='text'>• 前策成果交付</text>
+<rect x='340' y='220' width='220' height='40' class='box'/>
+<text x='354' y='246' class='stage-title'>管理咨询</text>
+<path class='arrow' d='M710 146 L450 220'/>
+<text x='354' y='280' class='text'>• 需求提资与设计审核</text>
+<text x='354' y='306' class='text'>• 施工督导与过程管控</text>
+<text x='354' y='332' class='text'>• 成本优化建议</text>
+<text x='354' y='358' class='text'>• 交付与质量管控</text>
+<rect x='600' y='220' width='220' height='40' class='box'/>
+<text x='614' y='246' class='stage-title'>招商管理</text>
+<path class='arrow' d='M710 146 L710 220'/>
+<text x='614' y='280' class='text'>• 招商策略与计划</text>
+<text x='614' y='306' class='text'>• 资源整合与精准匹配</text>
+<text x='614' y='332' class='text'>• 谈判与合作落地</text>
+<text x='614' y='358' class='text'>• 规划兑现与内容校核</text>
+<rect x='860' y='220' width='220' height='40' class='box'/>
+<text x='874' y='246' class='stage-title'>委托运营</text>
+<path class='arrow' d='M710 146 L970 220'/>
+<text x='874' y='280' class='text'>• 筹开组织与现场管理</text>
+<text x='874' y='306' class='text'>• 日常运营与内容管理</text>
+<text x='874' y='332' class='text'>• 经营指标与活动管理</text>
+<text x='874' y='358' class='text'>• 客诉与风险闭环</text>
+<text x='874' y='384' class='text'>• 运营分析报告</text>
+<rect x='1120' y='220' width='220' height='40' class='box'/>
+<text x='1134' y='246' class='stage-title'>横向支撑</text>
+<path class='arrow' d='M710 146 L1230 220'/>
+<text x='1134' y='280' class='text'>• 项目档案中心</text>
+<text x='1134' y='306' class='text'>• 交付物模板库</text>
+<text x='1134' y='332' class='text'>• 模型规则库</text>
+<text x='1134' y='358' class='text'>• 审计与日志</text>
+<text x='1134' y='384' class='text'>• 项目复盘库</text>
+</svg>

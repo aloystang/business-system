@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>团队健身打卡</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
+        <div>
+          <div class="brand-title">团队健身打卡</div>
+          <div class="brand-sub">每周 3 次 · 照片打卡 · 缺口扣款</div>
+        </div>
+      </div>
+      <div class="nav-tabs" role="tablist">
+        <button class="tab active" data-target="checkin">打卡</button>
+        <button class="tab" data-target="team">团队</button>
+        <button class="tab" data-target="stats">统计</button>
+        <button class="tab" data-target="challenge">挑战勋章</button>
+        <button class="tab" data-target="settle">结算记账</button>
+      </div>
+      <div class="topbar-status">
+        <div class="status-label">当前周</div>
+        <div id="weekRange" class="status-value">--</div>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="pill">Apple Health 风格 · 轻量团队版</div>
+        <h1>让团队的坚持看得见</h1>
+        <p>打卡有照片、统计有进度、结算有记录。</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="page active" data-page="checkin">
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h2>本周概览</h2>
+              <p>团队目标：每人每周 3 次打卡。</p>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <div class="metric-card">
+              <div class="metric-label">本周打卡总数</div>
+              <div id="metricTotal" class="metric-value">0</div>
+              <div class="metric-sub">团队累计</div>
+            </div>
+            <div class="metric-card accent">
+              <div class="metric-label">达标进度</div>
+              <div id="metricRate" class="metric-value">0%</div>
+              <div id="metricRequired" class="metric-sub">需完成 0 次</div>
+            </div>
+            <div class="metric-card warm">
+              <div class="metric-label">剩余缺口</div>
+              <div id="metricRemaining" class="metric-value">0</div>
+              <div class="metric-sub">未完成次数</div>
+            </div>
+            <div class="metric-card">
+              <div id="metricMemberLabel" class="metric-label">当前成员</div>
+              <div id="metricMemberCount" class="metric-value">0 次</div>
+              <div id="metricMemberPercent" class="metric-sub">超过 0% 的成员</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h2>打卡与照片</h2>
+              <p>必须上传照片，可多张。</p>
+            </div>
+          </div>
+          <div class="grid">
+            <section class="card" id="checkinCard">
+              <h3>提交打卡</h3>
+              <label for="checkinMemberSelect">成员</label>
+              <select id="checkinMemberSelect"></select>
+              <label for="checkinDate">日期</label>
+              <input id="checkinDate" type="date" />
+              <label for="checkinNote">备注</label>
+              <input id="checkinNote" type="text" placeholder="训练内容 / 时长 / 感受" />
+              <label for="checkinPhotos">打卡照片</label>
+              <input id="checkinPhotos" type="file" accept="image/*" multiple />
+              <div id="photoPreview" class="photo-preview"></div>
+              <button id="checkinBtn">提交打卡</button>
+              <div class="small" id="checkinHint"></div>
+            </section>
+
+            <section class="card" id="recentCard">
+              <h3>最近打卡</h3>
+              <label for="checkinFilterDate">按日期筛选</label>
+              <input id="checkinFilterDate" type="date" />
+              <ul class="checkin-list" id="checkinList"></ul>
+            </section>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" data-page="team">
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h2>团队与成员</h2>
+              <p>管理团队与成员。</p>
+            </div>
+          </div>
+          <div class="grid">
+            <section class="card" id="teamCard">
+              <h3>团队</h3>
+              <label for="teamSelect">当前团队</label>
+              <select id="teamSelect"></select>
+              <label for="teamNameInput">创建新团队</label>
+              <input id="teamNameInput" type="text" placeholder="团队名称" />
+              <button id="createTeamBtn">创建团队</button>
+            </section>
+
+            <section class="card" id="memberCard">
+              <h3>成员</h3>
+              <div id="memberEmpty" class="small">请选择团队查看成员。</div>
+              <ul class="list" id="memberList"></ul>
+              <label for="memberNameInput">添加成员</label>
+              <input id="memberNameInput" type="text" placeholder="成员姓名" />
+              <button id="addMemberBtn">添加成员</button>
+            </section>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" data-page="stats">
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h2>统计与排行榜</h2>
+              <p>查看阶段数据与排名。</p>
+            </div>
+          </div>
+          <div class="grid">
+            <section class="card" id="statsCard">
+              <h3>统计与排行榜</h3>
+              <label for="statsStart">开始日期</label>
+              <input id="statsStart" type="date" />
+              <label for="statsEnd">结束日期</label>
+              <input id="statsEnd" type="date" />
+              <button id="refreshStatsBtn" class="secondary">刷新统计</button>
+              <div id="summary" class="small"></div>
+              <ol class="list" id="leaderboardList"></ol>
+            </section>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" data-page="challenge">
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h2>挑战与勋章</h2>
+              <p>挑战进度与勋章展示。</p>
+            </div>
+          </div>
+          <div class="grid">
+            <section class="card" id="challengeCard">
+              <h3>挑战</h3>
+              <div id="challengeEmpty" class="small">暂无挑战。</div>
+              <div id="challengeList"></div>
+              <label for="challengeNameInput">挑战名称</label>
+              <input id="challengeNameInput" type="text" placeholder="每月 120 次打卡" />
+              <label for="challengeStart">开始日期</label>
+              <input id="challengeStart" type="date" />
+              <label for="challengeEnd">结束日期</label>
+              <input id="challengeEnd" type="date" />
+              <label for="challengeTarget">目标打卡总数</label>
+              <input id="challengeTarget" type="number" min="1" placeholder="120" />
+              <button id="createChallengeBtn">创建挑战</button>
+            </section>
+
+            <section class="card" id="badgeCard">
+              <h3>勋章</h3>
+              <label for="badgeMemberSelect">成员</label>
+              <select id="badgeMemberSelect"></select>
+              <ul class="list" id="badgeList"></ul>
+            </section>
+          </div>
+        </section>
+      </section>
+
+      <section class="page" data-page="settle">
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h2>结算与记账</h2>
+              <p>每周结算缺口，生成扣款记录。</p>
+            </div>
+          </div>
+          <div class="grid">
+            <section class="card" id="settleCard">
+              <h3>每周结算</h3>
+              <label for="settleWeekStart">选择周一日期</label>
+              <input id="settleWeekStart" type="date" />
+              <button id="settleWeekBtn">生成本周结算</button>
+              <ul class="list" id="settleResult"></ul>
+            </section>
+
+            <section class="card" id="ledgerCard">
+              <h3>扣款记录</h3>
+              <div class="small">仅记录，实际收款人工处理。</div>
+              <ul class="list" id="ledgerList"></ul>
+            </section>
+
+            <section class="card" id="weeklyCard">
+              <h3>历史周报</h3>
+              <ul class="list" id="weeklyList"></ul>
+            </section>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

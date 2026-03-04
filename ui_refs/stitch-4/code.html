@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Web Business Dashboard Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#137fec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar hiding for horizontal scrolls */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111418] dark:text-white antialiased">
+<div class="flex flex-col min-h-screen pb-[80px]"> <!-- Added padding bottom for tab bar -->
+<!-- Header Section -->
+<header class="sticky top-0 z-10 bg-white/90 dark:bg-[#101922]/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+<div class="px-4 py-3 flex items-center justify-between">
+<!-- User Profile -->
+<button class="flex items-center justify-center rounded-full size-8 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</button>
+<!-- Action Icons -->
+<div class="flex items-center gap-3">
+<button class="text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[24px]">search</span>
+</button>
+<button class="text-gray-600 dark:text-gray-300 relative">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-0 right-0 size-2 bg-red-500 rounded-full border-2 border-white dark:border-[#101922]"></span>
+</button>
+</div>
+</div>
+<div class="px-4 pb-4">
+<h1 class="text-3xl font-bold tracking-tight text-[#111418] dark:text-white">Executive Overview</h1>
+</div>
+<!-- Date Segmented Control -->
+<div class="px-4 pb-3 overflow-x-auto no-scrollbar">
+<div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-lg w-full max-w-md mx-auto">
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="date-range" type="radio"/>
+<div class="flex items-center justify-center py-1.5 px-3 rounded-md text-xs font-medium text-gray-500 peer-checked:bg-white dark:peer-checked:bg-gray-700 peer-checked:text-[#111418] dark:peer-checked:text-white peer-checked:shadow-sm transition-all duration-200">
+                            Week
+                        </div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input checked="" class="peer sr-only" name="date-range" type="radio"/>
+<div class="flex items-center justify-center py-1.5 px-3 rounded-md text-xs font-medium text-gray-500 peer-checked:bg-white dark:peer-checked:bg-gray-700 peer-checked:text-[#111418] dark:peer-checked:text-white peer-checked:shadow-sm transition-all duration-200">
+                            Month
+                        </div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="date-range" type="radio"/>
+<div class="flex items-center justify-center py-1.5 px-3 rounded-md text-xs font-medium text-gray-500 peer-checked:bg-white dark:peer-checked:bg-gray-700 peer-checked:text-[#111418] dark:peer-checked:text-white peer-checked:shadow-sm transition-all duration-200">
+                            Quarter
+                        </div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="date-range" type="radio"/>
+<div class="flex items-center justify-center py-1.5 px-3 rounded-md text-xs font-medium text-gray-500 peer-checked:bg-white dark:peer-checked:bg-gray-700 peer-checked:text-[#111418] dark:peer-checked:text-white peer-checked:shadow-sm transition-all duration-200">
+                            Year
+                        </div>
+</label>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 pt-6 space-y-6">
+<!-- KPI Carousel -->
+<section>
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 snap-x snap-mandatory">
+<!-- Card 1 -->
+<div class="snap-center shrink-0 w-[280px] p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15202b] shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Gross Margin</p>
+<span class="material-symbols-outlined text-gray-400 text-[20px]">show_chart</span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-[#111418] dark:text-white">42%</h3>
+</div>
+<div class="mt-3 flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+2.1% vs last month</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="snap-center shrink-0 w-[280px] p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15202b] shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Operating Efficiency</p>
+<span class="material-symbols-outlined text-gray-400 text-[20px]">bolt</span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-[#111418] dark:text-white">94%</h3>
+</div>
+<div class="mt-3 flex items-center gap-1.5 text-xs font-medium text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined text-[16px]">trending_down</span>
+<span>-1.2% (Needs Attention)</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="snap-center shrink-0 w-[280px] p-5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15202b] shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Net Revenue</p>
+<span class="material-symbols-outlined text-gray-400 text-[20px]">payments</span>
+</div>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-bold text-[#111418] dark:text-white">$1.2M</h3>
+</div>
+<div class="mt-3 flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+8.5% year over year</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Chart Preview Section (Simplified for Mobile) -->
+<section class="bg-white dark:bg-[#15202b] rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-semibold text-[#111418] dark:text-white">Revenue Growth</h3>
+<button class="text-primary text-sm font-medium">View All</button>
+</div>
+<!-- Abstract Chart Representation -->
+<div class="h-32 w-full flex items-end gap-2 justify-between px-2">
+<div class="w-full bg-blue-100 dark:bg-blue-900/30 rounded-t-sm h-[40%] relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[60%] transition-all duration-500 group-hover:h-[70%]"></div>
+</div>
+<div class="w-full bg-blue-100 dark:bg-blue-900/30 rounded-t-sm h-[60%] relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[75%] transition-all duration-500 group-hover:h-[85%]"></div>
+</div>
+<div class="w-full bg-blue-100 dark:bg-blue-900/30 rounded-t-sm h-[50%] relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[55%] transition-all duration-500 group-hover:h-[65%]"></div>
+</div>
+<div class="w-full bg-blue-100 dark:bg-blue-900/30 rounded-t-sm h-[75%] relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[85%] transition-all duration-500 group-hover:h-[95%]"></div>
+</div>
+<div class="w-full bg-blue-100 dark:bg-blue-900/30 rounded-t-sm h-[65%] relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[45%] transition-all duration-500 group-hover:h-[55%]"></div>
+</div>
+<div class="w-full bg-blue-100 dark:bg-blue-900/30 rounded-t-sm h-[85%] relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-sm h-[90%] transition-all duration-500 group-hover:h-[100%]"></div>
+</div>
+</div>
+<div class="flex justify-between mt-2 text-xs text-gray-400 px-1">
+<span>Mon</span>
+<span>Tue</span>
+<span>Wed</span>
+<span>Thu</span>
+<span>Fri</span>
+<span>Sat</span>
+</div>
+</section>
+<!-- Performance Report List -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h3 class="text-lg font-bold text-[#111418] dark:text-white">Performance Report</h3>
+<button class="text-sm text-primary font-medium">Filter</button>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Item 1 -->
+<div class="bg-white dark:bg-[#15202b] p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm active:scale-[0.98] transition-transform duration-200">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<h4 class="text-sm font-semibold text-[#111418] dark:text-white">Q3 Marketing Audit</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400">Marketing Dept.</p>
+</div>
+</div>
+<span class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-900/20 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">Active</span>
+</div>
+<div class="mt-2 pl-[52px] flex justify-between items-end border-t border-gray-100 dark:border-gray-800 pt-2">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Budget</span>
+<span class="text-sm font-semibold text-[#111418] dark:text-white">$12,000</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">ROI</span>
+<span class="text-sm font-semibold text-emerald-600">+12%</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-white dark:bg-[#15202b] p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm active:scale-[0.98] transition-transform duration-200">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600">
+<span class="material-symbols-outlined">pending</span>
+</div>
+<div>
+<h4 class="text-sm font-semibold text-[#111418] dark:text-white">Logistics Update</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400">Operations</p>
+</div>
+</div>
+<span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">Pending</span>
+</div>
+<div class="mt-2 pl-[52px] flex justify-between items-end border-t border-gray-100 dark:border-gray-800 pt-2">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Budget</span>
+<span class="text-sm font-semibold text-[#111418] dark:text-white">$4,500</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">ETA</span>
+<span class="text-sm font-semibold text-gray-600 dark:text-gray-300">2 Days</span>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-white dark:bg-[#15202b] p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm active:scale-[0.98] transition-transform duration-200">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600">
+<span class="material-symbols-outlined">dns</span>
+</div>
+<div>
+<h4 class="text-sm font-semibold text-[#111418] dark:text-white">Server Expansion</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400">IT Infrastructure</p>
+</div>
+</div>
+<span class="inline-flex items-center rounded-full bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">In Progress</span>
+</div>
+<div class="mt-2 pl-[52px] flex justify-between items-end border-t border-gray-100 dark:border-gray-800 pt-2">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Budget</span>
+<span class="text-sm font-semibold text-[#111418] dark:text-white">$85,000</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Capacity</span>
+<span class="text-sm font-semibold text-purple-600">Up 40%</span>
+</div>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="bg-white dark:bg-[#15202b] p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm active:scale-[0.98] transition-transform duration-200">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600">
+<span class="material-symbols-outlined">group_add</span>
+</div>
+<div>
+<h4 class="text-sm font-semibold text-[#111418] dark:text-white">Q4 Hiring Plan</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400">Human Resources</p>
+</div>
+</div>
+<span class="inline-flex items-center rounded-full bg-gray-100 dark:bg-gray-800 px-2 py-0.5 text-xs font-medium text-gray-600 dark:text-gray-400">Draft</span>
+</div>
+<div class="mt-2 pl-[52px] flex justify-between items-end border-t border-gray-100 dark:border-gray-800 pt-2">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Budget</span>
+<span class="text-sm font-semibold text-[#111418] dark:text-white">$22,000</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="text-[10px] uppercase tracking-wider text-gray-400 font-medium">Roles</span>
+<span class="text-sm font-semibold text-gray-600 dark:text-gray-300">5 Open</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Tab Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#101922]/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe pt-1">
+<div class="flex items-center justify-around h-[60px]">
+<button class="flex flex-col items-center justify-center w-full h-full text-primary space-y-1">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+<span class="text-[10px] font-medium">Overview</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 space-y-1 transition-colors">
+<span class="material-symbols-outlined text-[24px]">folder_open</span>
+<span class="text-[10px] font-medium">Projects</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 space-y-1 transition-colors">
+<span class="material-symbols-outlined text-[24px]">bar_chart</span>
+<span class="text-[10px] font-medium">Analytics</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full h-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 space-y-1 transition-colors">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</button>
+</div>
+<!-- Safe area spacing for iOS Home Indicator -->
+<div class="h-[20px] w-full bg-transparent"></div>
+</nav>
+</div>
+</body></html>

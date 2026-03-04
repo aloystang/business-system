@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>测试新闻源</title>
+    <item>
+      <title>重庆商业运营动态</title>
+      <link>https://example.com/news/1</link>
+      <description>第一条摘要</description>
+      <pubDate>Thu, 27 Feb 2026 09:00:00 +0800</pubDate>
+    </item>
+    <item>
+      <title>重庆物业服务观察</title>
+      <link>https://example.com/news/2</link>
+      <description>第二条摘要</description>
+      <pubDate>Thu, 27 Feb 2026 10:00:00 +0800</pubDate>
+    </item>
+  </channel>
+</rss>

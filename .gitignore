@@ -1,0 +1,20 @@
+node_modules/
+.DS_Store
+.env
+.venv/
+venv/
+dist/
+backups/
+*.log
+
+# Local data
+/data.sqlite
+data.sqlite
+public/uploads/
+uploads/
+backend/.env
+folo-bridge/.env
+backend/data/*.db
+backend/data/uploads/
+backend/data/exports/
+folo-bridge/data/*.db

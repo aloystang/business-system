@@ -1,0 +1,115 @@
+.dash-history-hero,
+.dash-history-mode-card,
+.dash-history-kpi-wrap {
+  padding: 16px 18px 18px;
+}
+
+.dash-history-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dash-history-hero-metric {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.dash-history-hero-metric span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.dash-history-hero-metric strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.dash-history-hero-metric small {
+  color: var(--color-text-secondary);
+}
+
+.dash-history-mode-card,
+.dash-history-kpi-wrap {
+  background: linear-gradient(180deg, rgba(255,255,255,1), rgba(249,250,251,0.96));
+}
+
+.dash-history-mode-card .dash-helper {
+  margin-top: 8px;
+}
+
+.dash-history-filter-card .dash-history-actions {
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.dash-history-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.dash-history-kpi-card {
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, rgba(255,255,255,1), rgba(249,250,251,0.96));
+  box-shadow: var(--shadow-soft);
+}
+
+.dash-history-kpi-card span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.dash-history-kpi-card strong {
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.dash-history-table-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.dash-history-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.dash-history-pagination > div {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 960px) {
+  .dash-history-hero-grid,
+  .dash-history-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .dash-history-hero-grid,
+  .dash-history-kpis {
+    grid-template-columns: 1fr;
+  }
+}

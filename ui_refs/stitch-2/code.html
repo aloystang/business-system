@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Business Management Dashboard V1</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f27f0d",
+                        "background-light": "#f9fafb", // Lighter gray as per request
+                        "background-dark": "#1a1a1a", // Dark graphite
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#262626",
+                        "text-primary-light": "#111827", // Gray 900
+                        "text-secondary-light": "#6b7280", // Gray 500
+                        "text-primary-dark": "#f3f4f6", // Gray 100
+                        "text-secondary-dark": "#9ca3af", // Gray 400
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.375rem", // rounded-md approx 6px
+                        "md": "0.5rem",       // rounded-lg approx 8px for iOS feel
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Apple-inspired scrollbar hiding for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark font-display antialiased overflow-hidden h-screen flex">
+<!-- Slim Sidebar (Adapted for mobile as a narrow icon strip) -->
+<nav class="w-16 flex-shrink-0 flex flex-col items-center py-6 border-r border-gray-200 dark:border-gray-800 bg-surface-light dark:bg-surface-dark z-20 h-full hidden sm:flex">
+<div class="mb-8">
+<div class="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">grid_view</span>
+</div>
+</div>
+<div class="flex flex-col gap-6 flex-1 w-full items-center">
+<button class="p-2 rounded-md text-primary bg-primary/10">
+<span class="material-symbols-outlined">dashboard</span>
+</button>
+<button class="p-2 rounded-md text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">analytics</span>
+</button>
+<button class="p-2 rounded-md text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">folder</span>
+</button>
+<button class="p-2 rounded-md text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div>
+<div class="h-8 w-8 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700" data-alt="User profile avatar small" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC6K4vgU_VP7ENHow6X8ElZRd0ZepU1kObQsRgof5AEQ_MUugI98YfTPhLhwyAp0jcdaj0UHC_1r_C63Vh3qOk_cqCab1bmvPdj7JKiduo4ILVnlv4H8ttbxF9xksfr7E5IRUTvZ08SE8aY9FFAybJ9ZOM8nckLnzdCKQ9UqRa-DwcCAFwToT2KhVdGpnotIUBwYhd9TK3KkAHbu2rYeENFaR-dpNT4CM-jFOlM9MTUj7GSAzdDoE63eO98KdMD2RMIAd2bTgW3MQ');"></div>
+</div>
+</nav>
+<!-- Bottom Nav for Mobile (Visible only on small screens) -->
+<nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-surface-light dark:bg-surface-dark border-t border-gray-200 dark:border-gray-800 z-50 px-6 py-3 flex justify-between items-center safe-area-pb">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-2xl">dashboard</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-2xl">analytics</span>
+<span class="text-[10px] font-medium">Stats</span>
+</button>
+<div class="relative -top-5">
+<button class="flex items-center justify-center h-12 w-12 rounded-full bg-primary text-white shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-2xl">folder</span>
+<span class="text-[10px] font-medium">Files</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-2xl">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</button>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Header -->
+<header class="flex-shrink-0 px-5 pt-5 pb-2 flex items-center justify-between bg-background-light dark:bg-background-dark z-10">
+<div>
+<p class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wide mb-1">Overview</p>
+<h1 class="text-2xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">Dashboard</h1>
+</div>
+<div class="flex items-center gap-3">
+<button class="relative p-2 text-text-primary-light dark:text-text-primary-dark rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background-light dark:ring-background-dark"></span>
+</button>
+<div class="sm:hidden h-9 w-9 rounded-full bg-cover bg-center border border-gray-200 dark:border-gray-700" data-alt="User profile avatar mobile" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB4pdqEgYAjnHhCISqjtTmk1pMjrl7nADD3GFA1fYgjersskMWOFyeoTFaPGy63MgfQ-XjTMFfFhbPiWptY7D_IX0NuejCP9B6ofIRcb_e5hX3Xh43trrdJYlbGTH4mE5OTh3fsSISxAGjuhYqxJuB6u9jtobOLq4IAKDT9UTFSajuia-LdHU7QSd7UTeuuhdA61RMmozVsd0PjeVB_vBgOuGUqK-5_uaiDnGkP3iLUJ-4KqBTweVt0-zlcKvT24P4a158i9ZxAgQ');"></div>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto overflow-x-hidden p-5 pb-24 sm:pb-5 no-scrollbar space-y-6">
+<!-- KPI Section (Horizontal Scroll on very small screens, Grid on others) -->
+<section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<!-- Revenue Card -->
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="flex justify-between items-start z-10">
+<span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Total Revenue</span>
+<div class="flex items-center gap-1 text-green-600 dark:text-green-500 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                            12.5%
+                        </div>
+</div>
+<div class="z-10">
+<h3 class="text-3xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">$124,500</h3>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">vs. last month</p>
+</div>
+<!-- Subtle Decoration -->
+<div class="absolute right-0 bottom-0 opacity-5 dark:opacity-10 transform translate-x-1/4 translate-y-1/4">
+<span class="material-symbols-outlined text-[100px]">payments</span>
+</div>
+</div>
+<!-- Efficiency Card -->
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col justify-between h-32 relative overflow-hidden">
+<div class="flex justify-between items-start z-10">
+<span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Efficiency</span>
+<div class="flex items-center gap-1 text-green-600 dark:text-green-500 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                            2.1%
+                        </div>
+</div>
+<div class="z-10 flex items-baseline gap-2">
+<h3 class="text-3xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">94%</h3>
+</div>
+<div class="w-full bg-gray-100 dark:bg-gray-700 h-1.5 rounded-full mt-auto mb-1 overflow-hidden">
+<div class="bg-text-primary-light dark:bg-white h-full rounded-full" style="width: 94%"></div>
+</div>
+</div>
+<!-- Risk Card -->
+<div class="bg-surface-light dark:bg-surface-dark p-5 rounded-md border border-gray-200 dark:border-gray-800 flex flex-col justify-between h-32 relative overflow-hidden ring-1 ring-primary/20">
+<div class="flex justify-between items-start z-10">
+<span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Risk Alerts</span>
+<div class="flex items-center gap-1 text-primary bg-primary/10 px-1.5 py-0.5 rounded text-xs font-semibold">
+                            Attention
+                        </div>
+</div>
+<div class="z-10">
+<h3 class="text-3xl font-bold tracking-tight text-primary">12</h3>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Pending review</p>
+</div>
+<div class="absolute right-0 top-0 p-4">
+<span class="material-symbols-outlined text-primary/20 text-4xl">warning</span>
+</div>
+</div>
+</section>
+<!-- Main Grid Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Data Table Section -->
+<div class="lg:col-span-2 bg-surface-light dark:bg-surface-dark rounded-md border border-gray-200 dark:border-gray-800 flex flex-col">
+<div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+<h3 class="font-semibold text-text-primary-light dark:text-text-primary-dark">Active Projects</h3>
+<button class="text-xs font-medium text-primary hover:text-primary/80">View All</button>
+</div>
+<div class="flex-1 overflow-x-auto">
+<table class="w-full text-left text-sm whitespace-nowrap">
+<thead class="bg-gray-50 dark:bg-gray-800/50 text-text-secondary-light dark:text-text-secondary-dark">
+<tr>
+<th class="px-5 py-3 font-medium">Project Name</th>
+<th class="px-5 py-3 font-medium hidden sm:table-cell">Owner</th>
+<th class="px-5 py-3 font-medium text-right sm:text-left">Status</th>
+<th class="px-5 py-3 font-medium text-right hidden sm:table-cell">Due Date</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-5 py-3.5">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-lg">web</span>
+</div>
+<div>
+<p class="font-medium text-text-primary-light dark:text-text-primary-dark">Website Redesign</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark sm:hidden">Design Team</p>
+</div>
+</div>
+</td>
+<td class="px-5 py-3.5 hidden sm:table-cell">
+<div class="flex items-center gap-2">
+<div class="h-6 w-6 rounded-full bg-cover bg-center" data-alt="Avatar Sarah" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBhSKqYkKK8-6DOZlhQGrFJUmebpAQrYtBThQcW7ZjiQ2E-Rg_blCg9O5u2v4zxhMfE5CbdnVo4vm4ZFc7CEtDcVbLlj_zqHjFKaEwmG_5ulTQTIGAnNqrmaOYwT0V4D_Len8obsJJ6FdZBTk4oaf-XA11zSlgV33iono1mX3cFWR5IM1UTWstPMdfQuYMl8QIqvbYejhXNWLfd2H6GffPpqaxXseGZa3RUVR2AvfrZtUv_V-vuTj46XwwxgzsUX1Q8kG-SF30mkQ');"></div>
+<span class="text-text-secondary-light dark:text-text-secondary-dark">Sarah J.</span>
+</div>
+</td>
+<td class="px-5 py-3.5 text-right sm:text-left">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                                            On Track
+                                        </span>
+</td>
+<td class="px-5 py-3.5 text-right text-text-secondary-light dark:text-text-secondary-dark hidden sm:table-cell">Oct 24</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-5 py-3.5">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-lg">campaign</span>
+</div>
+<div>
+<p class="font-medium text-text-primary-light dark:text-text-primary-dark">Q3 Marketing</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark sm:hidden">Marketing</p>
+</div>
+</div>
+</td>
+<td class="px-5 py-3.5 hidden sm:table-cell">
+<div class="flex items-center gap-2">
+<div class="h-6 w-6 rounded-full bg-cover bg-center" data-alt="Avatar Mike" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAoHLnGWVjWECD0dg-FMfnj7UXkyCkwE1csqhJlxCUreit019b_y1rUVp6qPStxpLx_6SYy4fFbNmf4SJV8uZa8zEDsCWt36nvYxKCcJmZlaNkXHrkoqfz4zAWCzmkZBNHMhyClTxZctnb1wq-bl1nwIJg8hRDWBULqPpz_6bs2BS1VwMv12woKln3Qm_G3Z-JIsF6BsDEnj5Qx4tjHUuHKP3a0iUi4PuSEg7yrC4mVN-vRYp4HqIhbOCqw4AYd-q5APsorcnRRJQ');"></div>
+<span class="text-text-secondary-light dark:text-text-secondary-dark">Mike T.</span>
+</div>
+</td>
+<td class="px-5 py-3.5 text-right sm:text-left">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border border-primary text-primary bg-transparent">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Review
+                                        </span>
+</td>
+<td class="px-5 py-3.5 text-right text-text-secondary-light dark:text-text-secondary-dark hidden sm:table-cell">Today</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-5 py-3.5">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-lg">mobile_friendly</span>
+</div>
+<div>
+<p class="font-medium text-text-primary-light dark:text-text-primary-dark">Mobile App Dev</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark sm:hidden">Dev Team</p>
+</div>
+</div>
+</td>
+<td class="px-5 py-3.5 hidden sm:table-cell">
+<div class="flex items-center gap-2">
+<div class="h-6 w-6 rounded-full bg-cover bg-center" data-alt="Avatar Alex" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFer7L4ZByMXfBIy2QD5UQsyekCe-eV7PyctXhPI2YRE13I_AZ8f7QdBRziAIrx3Wu10vFtXxDAfrux3PGNJPlnecAmk9uq5BvDnK5mC0S5_Zje75pQY5xKby_aBIu197IFJ9cowlwMTHe8-JASxdhWD73dNCNZ-i1fUVUFTAI5BH2rXDcFnx4dy-pZIHCpf5v4v5bt4UGuwWwXmhG4eEMfY_kXN41syobPssTMSiq3VwUCVzutd1kfsYuGuP6vSfuSHjsZz-zqA');"></div>
+<span class="text-text-secondary-light dark:text-text-secondary-dark">Alex R.</span>
+</div>
+</td>
+<td class="px-5 py-3.5 text-right sm:text-left">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                                            On Track
+                                        </span>
+</td>
+<td class="px-5 py-3.5 text-right text-text-secondary-light dark:text-text-secondary-dark hidden sm:table-cell">Nov 12</td>
+</tr>
+<tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td class="px-5 py-3.5">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-symbols-outlined text-lg">cloud_sync</span>
+</div>
+<div>
+<p class="font-medium text-text-primary-light dark:text-text-primary-dark">Cloud Migration</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark sm:hidden">Ops Team</p>
+</div>
+</div>
+</td>
+<td class="px-5 py-3.5 hidden sm:table-cell">
+<div class="flex items-center gap-2">
+<div class="h-6 w-6 rounded-full bg-cover bg-center" data-alt="Avatar Lisa" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuALJ0XpO5jfDwe3l3BVy_nIE4N9EpKqDEkRcTGUqqCR6D5BT0ZTC_9yhW50992WpMO3wbq5pAeGnuyO_lqCovCwYWr6l1hrTivKZGb1vSAUxdEDA7ufqH8M9hr8ruoLeyoguT6TXN7u-LQSTdjO7eckS7fTeyp-1en34zIBWZAymjgXlVyZqKgReNwDHNCQi7LhSOC2M1J1D8x0AO6q88IHUL8woIDEBDTPt-VHWb_RPmtJJJNk6LaTCwfE_E0zR4NpY0RoJ7lh-g');"></div>
+<span class="text-text-secondary-light dark:text-text-secondary-dark">Lisa K.</span>
+</div>
+</td>
+<td class="px-5 py-3.5 text-right sm:text-left">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border border-primary text-primary bg-transparent">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Delayed
+                                        </span>
+</td>
+<td class="px-5 py-3.5 text-right text-text-secondary-light dark:text-text-secondary-dark hidden sm:table-cell">Overdue</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Column Stack -->
+<div class="flex flex-col gap-6">
+<!-- Quick Actions Grid -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-md border border-gray-200 dark:border-gray-800 p-5">
+<h3 class="font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">Quick Actions</h3>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded-md border border-gray-100 dark:border-gray-700 hover:border-primary/50 hover:bg-primary/5 transition-all group">
+<div class="p-2 rounded-full bg-gray-50 dark:bg-gray-800 text-text-primary-light dark:text-text-primary-dark group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-xl">ios_share</span>
+</div>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">Export</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded-md border border-gray-100 dark:border-gray-700 hover:border-primary/50 hover:bg-primary/5 transition-all group">
+<div class="p-2 rounded-full bg-gray-50 dark:bg-gray-800 text-text-primary-light dark:text-text-primary-dark group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-xl">group_add</span>
+</div>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">Invite</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded-md border border-gray-100 dark:border-gray-700 hover:border-primary/50 hover:bg-primary/5 transition-all group">
+<div class="p-2 rounded-full bg-gray-50 dark:bg-gray-800 text-text-primary-light dark:text-text-primary-dark group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-xl">bar_chart</span>
+</div>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">Analyze</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded-md border border-gray-100 dark:border-gray-700 hover:border-primary/50 hover:bg-primary/5 transition-all group">
+<div class="p-2 rounded-full bg-gray-50 dark:bg-gray-800 text-text-primary-light dark:text-text-primary-dark group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-xl">print</span>
+</div>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">Print</span>
+</button>
+</div>
+</div>
+<!-- Mini Map/Location Card (Using abstract representation) -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-md border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col h-full min-h-[200px]">
+<div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+<h3 class="font-semibold text-text-primary-light dark:text-text-primary-dark">Regional Sales</h3>
+</div>
+<div class="relative flex-1 bg-gray-50 dark:bg-gray-900 w-full h-full min-h-[160px]">
+<!-- Abstract Map Representation -->
+<div class="absolute inset-0 bg-cover bg-center opacity-80" data-alt="Stylized map showing North America sales regions" data-location="North America Sales Map" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD35tZ0C2HZopJMts9fqpD3_LGhZXJfW-585bsgpbEmDZnyBW9sVnSoCyMAEbubEMSaqvx98PMD7zWJKLUvCMrxlPJ4jOLTrUteZHLzOkN-PVqbUFh2YeCIDmJvpx-s-Jd4C0D9SjmukQUxU16q0FAPyWysveQg0bXbcXe1xMr6Eqm1I0UETWRNju5Wgxdfps5tz7Gln5ctXKv2JuWHDZC4MqXl0Ln43mkp_Ih-9x437S9MPV4_lM1RZLva9W30wsFuSXL-FoN8jA');"></div>
+<!-- Pins -->
+<div class="absolute top-1/4 left-1/4 flex flex-col items-center group cursor-pointer">
+<div class="h-3 w-3 bg-primary rounded-full shadow-lg ring-4 ring-white dark:ring-gray-800"></div>
+<div class="bg-white dark:bg-gray-800 px-2 py-1 rounded shadow text-[10px] font-bold mt-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">NY: +12%</div>
+</div>
+<div class="absolute top-1/2 left-1/2 flex flex-col items-center group cursor-pointer">
+<div class="h-3 w-3 bg-gray-800 dark:bg-white rounded-full shadow-lg ring-4 ring-white dark:ring-gray-800"></div>
+<div class="bg-white dark:bg-gray-800 px-2 py-1 rounded shadow text-[10px] font-bold mt-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">TX: +5%</div>
+</div>
+<div class="absolute bottom-1/3 right-1/4 flex flex-col items-center group cursor-pointer">
+<div class="h-3 w-3 bg-gray-400 rounded-full shadow-lg ring-4 ring-white dark:ring-gray-800"></div>
+</div>
+</div>
+<div class="p-3 bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 flex justify-between text-xs text-text-secondary-light dark:text-text-secondary-dark">
+<span>Top: New York</span>
+<span class="font-medium text-text-primary-light dark:text-text-primary-dark">$45,200</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Mobile Spacer for FAB -->
+<div class="h-16 sm:hidden"></div>
+</div>
+<!-- Floating Action Button (Tablet/Desktop only) -->
+<button class="hidden sm:flex absolute bottom-8 right-8 h-14 w-14 rounded-full bg-primary shadow-xl hover:bg-primary/90 text-white items-center justify-center transition-transform hover:scale-105 z-30">
+<span class="material-symbols-outlined text-2xl">add</span>
+</button>
+</main>
+</body></html>

@@ -1,0 +1,46 @@
+html {
+  background: var(--color-page);
+}
+
+body {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  line-height: 1.45;
+}
+
+#root {
+  isolation: isolate;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    FILL 0,
+    wght 400,
+    GRAD 0,
+    opsz 24;
+}
+
+button {
+  cursor: pointer;
+}
+
+.notice,
+.toast {
+  border-radius: var(--radius-md);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}

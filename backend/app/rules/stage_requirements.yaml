@@ -1,0 +1,21 @@
+stages:
+  evaluation:
+    required_fields: ["name", "client_name", "region", "asset_type"]
+    required_deliverables: ["feasibility_report"]
+  estimation:
+    required_fields: ["area_m2"]
+    required_deliverables: ["estimation_report"]
+  initiation:
+    required_deliverables: ["feasibility_report", "estimation_report", "initiation_note"]
+  planning:
+    required_deliverables: ["plan_document"]
+  bidding:
+    required_deliverables: ["bid_document", "commercial_terms"]
+  contracting:
+    required_deliverables: ["signed_contract", "payment_schedule"]
+  preopen:
+    required_deliverables: ["preopen_plan"]
+  operation:
+    required_deliverables: ["ops_weekly_report_template"]
+  review:
+    required_deliverables: ["review_report", "variance_analysis"]

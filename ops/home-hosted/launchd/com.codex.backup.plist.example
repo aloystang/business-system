@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.codex.backup</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/zsh</string>
+    <string>__REPO_DIR__/ops/home-hosted/scripts/backup_runtime_data.sh</string>
+  </array>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>3</integer>
+    <key>Minute</key>
+    <integer>30</integer>
+  </dict>
+
+  <key>WorkingDirectory</key>
+  <string>__REPO_DIR__/backend</string>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/codex-home-hosted/backup.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/codex-home-hosted/backup.err.log</string>
+</dict>
+</plist>

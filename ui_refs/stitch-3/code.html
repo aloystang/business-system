@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Web Analytics &amp; Decision Support</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f27f0d",
+                        "background-light": "#f8f7f5",
+                        "background-dark": "#181411", /* Matching the provided component style */
+                        "surface-dark": "#221910",
+                        "surface-light": "#ffffff",
+                        "border-dark": "#393028",
+                        "text-secondary": "#baab9c",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal scrolling areas */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary/30">
+<!-- Mobile Header -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-border-dark">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center p-2 -ml-2 rounded-full text-slate-500 dark:text-text-secondary hover:bg-slate-200 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">menu</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">Dashboard</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="relative p-2 rounded-full text-slate-500 dark:text-text-secondary hover:bg-slate-200 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-primary rounded-full ring-2 ring-background-light dark:ring-background-dark"></span>
+</button>
+<div class="size-8 rounded-full bg-slate-200 dark:bg-surface-dark overflow-hidden border border-slate-300 dark:border-border-dark">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBquRD9NKIX8ztA4ZdPYO8yO9eqGncy-SUgUh5OyasjPGruZYXl43rlQmSoGtrCBVKzYb8JMtVS9dyfiq7rFkX5lwLwBI2i5S1u2MSfZBAXvYRsTa4cStmNLsTHcShzLT_1Xe3W-R-fUAyzab2ARJ5d9Vri0t7vif9LTHeZW9gKuNPMtBpXHFDQzmeCflWjFjxBkT_WL5F8vC0Mlv0GgxA7XTR9VBrNBjp4kQNLq1wacS7B6izUHNbPloFyc6NdLZtOPeI2e2NOpg"/>
+</div>
+</div>
+</header>
+<main class="flex flex-col gap-6 pb-24">
+<!-- KPI Scroll Area -->
+<section class="flex flex-col gap-3 px-4 pt-4">
+<div class="flex items-center justify-between">
+<h2 class="text-sm font-semibold text-slate-500 dark:text-text-secondary uppercase tracking-wider">Key Metrics</h2>
+<span class="text-xs text-primary font-medium">Live</span>
+</div>
+<div class="flex overflow-x-auto gap-3 pb-2 hide-scrollbar -mx-4 px-4 snap-x">
+<!-- KPI Card 1 -->
+<div class="min-w-[160px] snap-center flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-500 dark:text-text-secondary">Revenue</span>
+<span class="material-symbols-outlined text-[20px] text-primary">payments</span>
+</div>
+<div>
+<p class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">$124.5k</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[16px] text-green-500">trending_up</span>
+<span class="text-xs font-medium text-green-500">+12%</span>
+</div>
+</div>
+</div>
+<!-- KPI Card 2 -->
+<div class="min-w-[160px] snap-center flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-500 dark:text-text-secondary">Users</span>
+<span class="material-symbols-outlined text-[20px] text-slate-400">group</span>
+</div>
+<div>
+<p class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">12.5k</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[16px] text-green-500">trending_up</span>
+<span class="text-xs font-medium text-green-500">+5%</span>
+</div>
+</div>
+</div>
+<!-- KPI Card 3 -->
+<div class="min-w-[160px] snap-center flex flex-col gap-3 p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark shadow-sm ring-1 ring-primary/20">
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-500 dark:text-text-secondary">Conv. Rate</span>
+<span class="material-symbols-outlined text-[20px] text-primary animate-pulse">priority_high</span>
+</div>
+<div>
+<p class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">3.2%</p>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[16px] text-red-500">trending_down</span>
+<span class="text-xs font-medium text-red-500">-1%</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Chart Section -->
+<section class="px-4 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-lg font-bold text-slate-900 dark:text-white">Traffic Overview</h2>
+<p class="text-sm text-slate-500 dark:text-text-secondary">Last 7 Days vs Previous</p>
+</div>
+<button class="p-2 bg-slate-100 dark:bg-surface-dark rounded-lg text-slate-600 dark:text-text-secondary hover:text-primary transition-colors border border-slate-200 dark:border-border-dark">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</button>
+</div>
+<div class="bg-white dark:bg-surface-dark rounded-xl p-4 border border-slate-200 dark:border-border-dark shadow-sm">
+<!-- Chart Controls -->
+<div class="flex p-1 bg-slate-100 dark:bg-background-dark rounded-lg mb-6">
+<button class="flex-1 py-1.5 px-3 rounded-md text-xs font-semibold bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10">Visits</button>
+<button class="flex-1 py-1.5 px-3 rounded-md text-xs font-medium text-slate-500 dark:text-text-secondary hover:text-slate-900 dark:hover:text-white transition-colors">Bounce</button>
+<button class="flex-1 py-1.5 px-3 rounded-md text-xs font-medium text-slate-500 dark:text-text-secondary hover:text-slate-900 dark:hover:text-white transition-colors">Duration</button>
+</div>
+<!-- Main Chart -->
+<div class="relative w-full h-48">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 50">
+<!-- Grid lines -->
+<line class="text-slate-500" stroke="currentColor" stroke-opacity="0.1" stroke-width="0.2" x1="0" x2="100" y1="0" y2="0"></line>
+<line class="text-slate-500" stroke="currentColor" stroke-opacity="0.1" stroke-width="0.2" x1="0" x2="100" y1="12.5" y2="12.5"></line>
+<line class="text-slate-500" stroke="currentColor" stroke-opacity="0.1" stroke-width="0.2" x1="0" x2="100" y1="25" y2="25"></line>
+<line class="text-slate-500" stroke="currentColor" stroke-opacity="0.1" stroke-width="0.2" x1="0" x2="100" y1="37.5" y2="37.5"></line>
+<!-- Previous period (dashed) -->
+<path class="text-slate-300 dark:text-slate-600" d="M0 40 Q10 38 20 35 T40 30 T60 25 T80 28 T100 20" fill="none" stroke="currentColor" stroke-dasharray="2 2" stroke-width="0.5"></path>
+<!-- Current period -->
+<!-- Gradient defs -->
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#f27f0d" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#f27f0d" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0 35 Q10 30 20 25 T40 15 T60 20 T80 10 T100 5 V 50 H 0 Z" fill="url(#chartGradient)"></path>
+<path d="M0 35 Q10 30 20 25 T40 15 T60 20 T80 10 T100 5" fill="none" stroke="#f27f0d" stroke-linecap="round" stroke-width="0.8" vector-effect="non-scaling-stroke"></path>
+<!-- Data Points -->
+<circle class="fill-white dark:fill-surface-dark stroke-primary" cx="40" cy="15" r="1.5" stroke-width="0.5"></circle>
+<circle class="fill-white dark:fill-surface-dark stroke-primary" cx="80" cy="10" r="1.5" stroke-width="0.5"></circle>
+</svg>
+<!-- Tooltip approximation -->
+<div class="absolute top-[20%] left-[40%] -translate-x-1/2 -translate-y-full flex flex-col items-center">
+<div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-bold py-1 px-2 rounded shadow-lg mb-1 whitespace-nowrap">
+                            14.2k Visits
+                        </div>
+<div class="w-0.5 h-8 bg-slate-900/10 dark:bg-white/10"></div>
+</div>
+</div>
+<!-- X Axis Labels -->
+<div class="flex justify-between mt-2 text-xs font-medium text-slate-400 dark:text-text-secondary">
+<span>Mon</span>
+<span>Tue</span>
+<span>Wed</span>
+<span>Thu</span>
+<span>Fri</span>
+<span>Sat</span>
+<span>Sun</span>
+</div>
+</div>
+</section>
+<!-- Decision Support Section -->
+<section class="flex flex-col gap-4 px-4">
+<div class="flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Decision Support</h3>
+<div class="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary">4 Pending</div>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Action Item 1: Critical -->
+<div class="flex items-center p-4 rounded-xl bg-white dark:bg-surface-dark border-l-4 border-l-primary border-y border-r border-y-slate-200 border-r-slate-200 dark:border-y-border-dark dark:border-r-border-dark shadow-sm">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-bold text-primary uppercase tracking-wide">Critical</span>
+<span class="text-xs text-slate-400">• 2h ago</span>
+</div>
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white truncate">Server Load Spike</h4>
+<p class="text-xs text-slate-500 dark:text-text-secondary truncate">Region US-East-1 reaching capacity.</p>
+</div>
+<button class="ml-4 flex items-center justify-center size-10 rounded-full bg-primary text-white shadow-md shadow-primary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</button>
+</div>
+<!-- Action Item 2: Warning -->
+<div class="flex items-center p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-bold text-orange-400 uppercase tracking-wide">Review</span>
+<span class="text-xs text-slate-400">• 5h ago</span>
+</div>
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white truncate">Ad Campaign B Approval</h4>
+<p class="text-xs text-slate-500 dark:text-text-secondary truncate">Budget exceeds auto-approve limit.</p>
+</div>
+<button class="ml-4 flex items-center justify-center size-10 rounded-full bg-background-light dark:bg-background-dark border border-slate-200 dark:border-border-dark text-slate-600 dark:text-text-secondary active:scale-95 transition-transform hover:text-primary hover:border-primary">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+<!-- Action Item 3: Info -->
+<div class="flex items-center p-4 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark shadow-sm">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Suggestion</span>
+<span class="text-xs text-slate-400">• 1d ago</span>
+</div>
+<h4 class="text-sm font-semibold text-slate-900 dark:text-white truncate">Optimize Database</h4>
+<p class="text-xs text-slate-500 dark:text-text-secondary truncate">Weekly maintenance script ready.</p>
+</div>
+<button class="ml-4 flex items-center justify-center size-10 rounded-full bg-background-light dark:bg-background-dark border border-slate-200 dark:border-border-dark text-slate-600 dark:text-text-secondary active:scale-95 transition-transform hover:text-primary hover:border-primary">
+<span class="material-symbols-outlined text-[20px]">play_arrow</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Secondary Charts Grid -->
+<section class="grid grid-cols-2 gap-3 px-4">
+<div class="p-3 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark flex flex-col gap-2">
+<span class="text-xs font-medium text-slate-500 dark:text-text-secondary">Device Usage</span>
+<div class="flex items-end gap-1 h-16 w-full justify-between px-1">
+<div class="w-1/4 bg-slate-200 dark:bg-slate-700 rounded-t-sm h-[40%]"></div>
+<div class="w-1/4 bg-slate-300 dark:bg-slate-600 rounded-t-sm h-[60%]"></div>
+<div class="w-1/4 bg-primary rounded-t-sm h-[85%] relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity">Mob</div>
+</div>
+<div class="w-1/4 bg-slate-200 dark:bg-slate-700 rounded-t-sm h-[25%]"></div>
+</div>
+<div class="flex justify-between items-center text-[10px] text-slate-400">
+<span>Mobile +15%</span>
+</div>
+</div>
+<div class="p-3 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-border-dark flex flex-col gap-2">
+<span class="text-xs font-medium text-slate-500 dark:text-text-secondary">Server Health</span>
+<div class="relative h-16 w-full flex items-center justify-center">
+<svg class="w-12 h-12 rotate-[-90deg]" viewbox="0 0 36 36">
+<path class="text-slate-200 dark:text-slate-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="4"></path>
+<path class="text-green-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="92, 100" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<div class="absolute text-[10px] font-bold text-slate-900 dark:text-white">92%</div>
+</div>
+<div class="flex justify-between items-center text-[10px] text-slate-400">
+<span>Stable</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Mobile Bottom Navigation -->
+<nav class="fixed bottom-0 w-full bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-border-dark pb-safe">
+<div class="grid grid-cols-4 h-16">
+<a class="flex flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+<span class="text-[10px] font-medium">Overview</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-text-secondary hover:text-slate-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">bar_chart</span>
+<span class="text-[10px] font-medium">Reports</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-text-secondary hover:text-slate-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">folder</span>
+<span class="text-[10px] font-medium">Datasets</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-slate-400 dark:text-text-secondary hover:text-slate-900 dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</div>
+</nav>
+</body></html>

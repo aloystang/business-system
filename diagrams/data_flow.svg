@@ -1,0 +1,52 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1500' height='800' viewBox='0 0 1500 800'>
+<defs>
+  <marker id='arrow' markerWidth='10' markerHeight='10' refX='8' refY='3' orient='auto' markerUnits='strokeWidth'>
+    <path d='M0,0 L0,6 L9,3 z' fill='#94a3b8'/>
+  </marker>
+</defs>
+
+<style>
+  .title { font: 700 22px 'Inter', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; fill: #0f172a; }
+  .stage-title { font: 700 16px 'Inter', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; fill: #0f172a; }
+  .text { font: 12px 'Inter', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; fill: #334155; }
+  .muted { font: 12px 'Inter', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; fill: #64748b; }
+  .box { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.2; rx: 14; }
+  .support { fill: #f8fafc; stroke: #e2e8f0; stroke-width: 1.2; rx: 16; }
+  .arrow { stroke: #94a3b8; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+</style>
+
+<text x='60' y='60' class='title'>模块间数据流关系图</text>
+<rect x='80' y='140' width='200' height='56' class='box'/>
+<text x='96' y='174' class='stage-title'>数据采集</text>
+<rect x='280' y='140' width='200' height='56' class='box'/>
+<text x='296' y='174' class='stage-title'>项目基础档案</text>
+<rect x='520' y='140' width='200' height='56' class='box'/>
+<text x='536' y='174' class='stage-title'>项目筛选</text>
+<rect x='760' y='140' width='200' height='56' class='box'/>
+<text x='776' y='174' class='stage-title'>项目测算</text>
+<rect x='1000' y='140' width='200' height='56' class='box'/>
+<text x='1016' y='174' class='stage-title'>前策成果交付</text>
+<rect x='1240' y='140' width='200' height='56' class='box'/>
+<text x='1256' y='174' class='stage-title'>管理咨询</text>
+<path class='arrow' d='M280 168 L280 168'/>
+<path class='arrow' d='M480 168 L520 168'/>
+<path class='arrow' d='M720 168 L760 168'/>
+<path class='arrow' d='M960 168 L1000 168'/>
+<path class='arrow' d='M1200 168 L1240 168'/>
+<rect x='520' y='280' width='200' height='56' class='box'/>
+<text x='536' y='314' class='stage-title'>招商管理</text>
+<rect x='760' y='280' width='200' height='56' class='box'/>
+<text x='776' y='314' class='stage-title'>委托运营</text>
+<rect x='1000' y='280' width='200' height='56' class='box'/>
+<text x='1016' y='314' class='stage-title'>复盘/续约</text>
+<path class='arrow' d='M1240 168 L620 280'/>
+<path class='arrow' d='M720 308 L760 308'/>
+<path class='arrow' d='M960 308 L1000 308'/>
+<rect x='80' y='420' width='1340' height='160' class='support'/>
+<text x='100' y='450' class='stage-title'>横向支撑数据回流</text>
+<text x='100' y='480' class='text'>• 项目档案中心</text>
+<text x='100' y='504' class='text'>• 交付物模板库</text>
+<text x='100' y='528' class='text'>• 模型规则库</text>
+<text x='100' y='552' class='text'>• 审计与日志</text>
+<text x='100' y='576' class='text'>• 项目复盘库</text>
+</svg>

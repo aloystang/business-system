@@ -1,0 +1,68 @@
+calc_config_version: "calc-v1.0.0"
+planning_years: 10
+
+defaults:
+  rent_base_default: 100.0
+  rentable_area_ratio_default: 0.7
+  occupancy_curve: [0.7, 0.85, 0.9, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95]
+  rent_growth_curve: [0.0, 0.0, 0.05, 0.0, 0.0, 0.05, 0.0, 0.0, 0.05, 0.0]
+  leasing_commission_months: 2.0
+  operation_commission_rate: 0.08
+
+  operation_monthly_fee_wan: 12.0
+  consultant_fee_yearly_wan: 0.0
+  marketing_fee_year1_2_wan: 150.0
+  marketing_fee_stable_wan: 120.0
+
+  venue_leasing_rate: 0.005
+  ad_leasing_rate: 0.005
+  venue_ad_start_year_index: 4
+
+  parking_slots: 769
+  parking_fee_year1_yuan_day: 15.0
+  parking_fee_stable_yuan_day: 20.0
+  parking_year1_factor: 0.5
+
+  internal_tax_rate: 0.06
+  hr_base_annual_cost_wan: 107.52
+  hr_growth_rate: 0.02
+  admin_annual_cost_wan: 15.0
+
+  invest_cost_default_wan: 0.0
+
+advanced_params:
+  - key: "rent_base"
+    label: "租金基准"
+    type: "number"
+    unit: "元/㎡/月"
+    min: 0
+    max: 10000
+    description: "基础平均租金，可覆盖采集页租金区间计算值。"
+  - key: "occupancy_curve"
+    label: "出租率曲线"
+    type: "array"
+    unit: "%"
+    min: 0
+    max: 1
+    description: "10年出租率曲线，长度固定10。"
+  - key: "rent_growth_curve"
+    label: "租金递增曲线"
+    type: "array"
+    unit: "%"
+    min: 0
+    max: 1
+    description: "10年租金递增曲线，长度固定10。"
+  - key: "leasing_commission_months"
+    label: "招商佣金（月）"
+    type: "number"
+    unit: "月"
+    min: 0
+    max: 12
+    description: "招商佣金按等效月数计提。"
+  - key: "operation_commission_rate"
+    label: "运营提成率"
+    type: "number"
+    unit: "%"
+    min: 0
+    max: 1
+    description: "运营提成比例，基于甲方口径收入计算。"
