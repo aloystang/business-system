@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 BACKEND_DIR="$REPO_DIR/backend"
 BRIDGE_DIR="$REPO_DIR/folo-bridge"
+BIDMONITOR_DIR="$REPO_DIR/BidMonitor-AI"
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
@@ -19,7 +20,7 @@ RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
 STAMP="$(date '+%Y%m%d-%H%M%S')"
 TARGET_DIR="$BACKUP_ROOT/$STAMP"
 
-mkdir -p "$TARGET_DIR/backend" "$TARGET_DIR/folo-bridge"
+mkdir -p "$TARGET_DIR/backend" "$TARGET_DIR/folo-bridge" "$TARGET_DIR/bidmonitor"
 
 if [ -f "$BACKEND_DIR/data/app.db" ]; then
   cp "$BACKEND_DIR/data/app.db" "$TARGET_DIR/backend/app.db"
@@ -39,6 +40,14 @@ fi
 
 if [ "${BACKUP_INCLUDE_BRIDGE_SUBSCRIPTIONS:-true}" = "true" ] && [ -f "${FOLO_BRIDGE_SUBSCRIPTIONS:-$BRIDGE_DIR/subscriptions.yaml}" ]; then
   cp "${FOLO_BRIDGE_SUBSCRIPTIONS:-$BRIDGE_DIR/subscriptions.yaml}" "$TARGET_DIR/folo-bridge/subscriptions.yaml"
+fi
+
+if [ "${BACKUP_INCLUDE_BIDMONITOR_DB:-true}" = "true" ] && [ -f "$BIDMONITOR_DIR/server/data/bids.db" ]; then
+  cp "$BIDMONITOR_DIR/server/data/bids.db" "$TARGET_DIR/bidmonitor/bids.db"
+fi
+
+if [ "${BACKUP_INCLUDE_BIDMONITOR_CONFIG:-true}" = "true" ] && [ -f "$BIDMONITOR_DIR/server/server_config.json" ]; then
+  cp "$BIDMONITOR_DIR/server/server_config.json" "$TARGET_DIR/bidmonitor/server_config.json"
 fi
 
 find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -mtime "+$RETENTION_DAYS" -exec rm -rf {} +

@@ -1,4 +1,7 @@
 export const INTEL_PAGE_SIZE = 18
+export const INTEL_AGGREGATE_PAGE_SIZE = 200
+
+const INTEL_AGGREGATE_MAX_PAGES = 50
 
 export function toQuery(params) {
   const search = new URLSearchParams()
@@ -56,4 +59,35 @@ export function groupBySource(items) {
     ...group,
     items: group.items.sort((a, b) => String(b.published_at || '').localeCompare(String(a.published_at || ''))),
   }))
+}
+
+export async function fetchAllIntelItems(loadJson, baseParams) {
+  let page = 1
+  let total = 0
+  const mergedItems = []
+
+  while (page <= INTEL_AGGREGATE_MAX_PAGES) {
+    const response = await loadJson(
+      `/api/intel/items?${toQuery({
+        ...baseParams,
+        page,
+        page_size: INTEL_AGGREGATE_PAGE_SIZE,
+      })}`
+    )
+
+    const pageItems = Array.isArray(response.items) ? response.items : []
+    total = Number(response.total || 0)
+    mergedItems.push(...pageItems)
+
+    if (!pageItems.length || mergedItems.length >= total || pageItems.length < INTEL_AGGREGATE_PAGE_SIZE) {
+      break
+    }
+
+    page += 1
+  }
+
+  return {
+    items: mergedItems,
+    total,
+  }
 }

@@ -1,0 +1,73 @@
+diff --git a/server/README.md b/server/README.md
+index f6901b3..7d70c0c 100644
+--- a/server/README.md
++++ b/server/README.md
+@@ -38,7 +38,7 @@ server/
+   1. 在Windows上运行 pack.bat，自动打包并上传到服务器
+   2. 服务器上执行 ./server/setup.sh 完成部署
+   3. 访问 http://服务器IP:8080
+-  4. 输入用户名密码登录（默认: CDKJ / cdkj）
++  4. 输入用户名密码登录（默认: CDKJ / cdkj，正式运行前必须修改）
+ 
+ 方式二：手动部署
+   1. 上传代码到服务器 /opt/bidmonitor/
+@@ -54,7 +54,12 @@ server/
+   默认账号: CDKJ
+   默认密码: cdkj
+ 
+-如需修改，编辑 server/app.py 中的 AUTH_USERNAME 和 AUTH_PASSWORD 变量。
++正式运行时，优先通过环境变量覆盖：
++
++  BIDMONITOR_USERNAME=新的用户名
++  BIDMONITOR_PASSWORD=新的密码
++
++如未提供环境变量，服务才会退回默认值。
+ 
+ 
+ 
+diff --git a/server/app.py b/server/app.py
+index 0842cc2..79d25ed 100644
+--- a/server/app.py
++++ b/server/app.py
+@@ -74,8 +74,8 @@ CONFIG_FILE = os.path.join(BASE_DIR, 'server', 'server_config.json')
+ 
+ # HTTP Basic 认证配置
+ security = HTTPBasic()
+-AUTH_USERNAME = "CDKJ"
+-AUTH_PASSWORD = "cdkj"
++AUTH_USERNAME = os.getenv("BIDMONITOR_USERNAME", "CDKJ").strip() or "CDKJ"
++AUTH_PASSWORD = os.getenv("BIDMONITOR_PASSWORD", "cdkj").strip() or "cdkj"
+ 
+ def verify_credentials(credentials: HTTPBasicCredentials = Depends(security)):
+     """验证用户名和密码"""
+@@ -223,6 +223,7 @@ async def run_monitor_task():
+         # 设置启用的网站
+         monitor.config['crawler'] = monitor.config.get('crawler', {})
+         monitor.config['crawler']['enabled_sites'] = config.get('enabled_sites', [])
++        monitor.config['custom_sites'] = config.get('custom_sites', [])
+         # 使用配置中的Selenium设置
+         monitor.config['crawler']['use_selenium'] = config.get('use_selenium', False)
+         if config.get('use_selenium'):
+@@ -232,6 +233,7 @@ async def run_monitor_task():
+         
+         # 重新初始化爬虫
+         monitor.crawlers = monitor._init_crawlers()
++        app_state.add_log(f"📡 已加载爬虫数量: {len(monitor.crawlers)}")
+         
+         # 设置爬虫总数
+         app_state.progress_total = len(monitor.crawlers)
+@@ -410,6 +412,8 @@ async def lifespan(app: FastAPI):
+     """应用生命周期管理"""
+     # 启动时
+     app_state.config = load_config()
++    if AUTH_USERNAME == "CDKJ" and AUTH_PASSWORD == "cdkj":
++        app_state.add_log("警告：BidMonitor 仍在使用默认认证凭据，请尽快改为环境变量。")
+     app_state.add_log("BidMonitor 服务器已启动")
+     
+     yield
+@@ -905,5 +909,3 @@ async def test_ai():
+ if __name__ == "__main__":
+     import uvicorn
+     uvicorn.run(app, host="0.0.0.0", port=8080)
+-
+-

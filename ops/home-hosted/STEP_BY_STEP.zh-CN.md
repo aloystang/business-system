@@ -8,7 +8,7 @@
 最终效果：
 
 - 前端在 Vercel
-- 后端、`folo-bridge`、同步、备份、Cloudflare Tunnel 在备用 Mac
+- `BidMonitor-AI`、后端、`folo-bridge`、同步、备份、Cloudflare Tunnel 在备用 Mac
 - 当前本机关机不影响网站访问
 
 ## 0. 你需要准备的账号
@@ -39,11 +39,13 @@ git init
 git add .
 git commit -m "Prepare home-hosted deployment"
 git branch -M main
-git remote add origin <你的仓库地址>
+git remote add origin 你的仓库地址
 git push -u origin main
 ```
 
 如果仓库已经存在，只需要继续正常提交和推送。
+
+注意：命令里的 `你的仓库地址` 是占位文字，不要带尖括号。
 
 ### 1.2 在 Vercel 创建前端项目
 
@@ -79,11 +81,13 @@ git push -u origin main
 
 ```bash
 cd ~
-git clone <你的仓库地址> codex
+git clone --recurse-submodules 你的仓库地址 codex
 cd ~/codex
 ```
 
 如果你的目录不想叫 `codex`，可以换，但后面命令里的路径也要一起改。
+
+如果你之前已经用普通 `git clone` 拉过一次，也没关系，`bootstrap_spare_mac.sh` 会补做 `BidMonitor-AI` 子模块初始化。
 
 ### 2.3 执行初始化脚本
 
@@ -96,8 +100,12 @@ cd ~/codex
 
 这一步会做：
 
+- 初始化 `BidMonitor-AI` 子模块
+- 自动应用 `BidMonitor-AI` 的 home-hosted 补丁
 - 创建 `backend/.venv`
+- 创建 `BidMonitor-AI/.venv`
 - 安装 `backend` 和 `folo-bridge` 依赖
+- 安装 `BidMonitor-AI` Web 服务依赖
 - 复制 `.env.example` 到 `.env`（如果不存在）
 - 复制 `subscriptions.example.yaml` 到 `subscriptions.yaml`
 - 创建日志目录
@@ -121,6 +129,11 @@ PUBLIC_SHARE_BASE=https://app.你的域名
 DATABASE_URL=sqlite:////Users/你的用户名/codex/backend/data/app.db
 UPLOAD_DIR=/Users/你的用户名/codex/backend/data/uploads
 EXPORT_DIR=/Users/你的用户名/codex/backend/data/exports
+BIDMONITOR_BASE_URL=http://127.0.0.1:8080
+BIDMONITOR_PULL_PATH=/api/results
+BIDMONITOR_USERNAME=换成新的BidMonitor用户名
+BIDMONITOR_PASSWORD=换成新的BidMonitor密码
+BIDMONITOR_API_TOKEN=与上面保持一致的 用户名:密码
 FOLO_BASE_URL=http://127.0.0.1:9090
 FOLO_API_TOKEN=换成私有token
 FOLO_SYNC_ENABLED=true
@@ -128,6 +141,11 @@ CLOUDFLARED_TUNNEL_TOKEN=先留空，后面去 Cloudflare 拿
 BACKUP_DIR=/Users/你的用户名/codex/backups/runtime
 BACKUP_RETENTION_DAYS=14
 ```
+
+注意：
+
+- 不要继续使用默认的 `CDKJ / cdkj`
+- `BIDMONITOR_API_TOKEN` 必须和 `BIDMONITOR_USERNAME:BIDMONITOR_PASSWORD` 保持一致
 
 再编辑桥接：
 
@@ -244,11 +262,14 @@ cd ~/codex
 
 这会装并加载这些服务：
 
+- `BidMonitor-AI`
 - `backend`
 - `folo-bridge`
 - `cloudflared`
 - `intel-sync`
 - `backup`
+
+注意：`BidMonitor-AI` 不走公网暴露，只监听备用 Mac 本机的 `127.0.0.1:8080`。
 
 ### 4.2 查看状态
 
@@ -261,16 +282,19 @@ API_PUBLIC_BASE=https://api.你的域名 ./ops/home-hosted/scripts/status_home_h
 
 你应该看到：
 
+- `bidmonitor` 是 `OK`
 - `backend` 是 `OK`
 - `folo-bridge` 是 `OK`
 - `cloudflared` 是 `OK`
-- 本地 `8000` / `9090` 健康检查通过
+- 本地 `8000` / `8080` / `9090` 健康检查通过
+- 最近一次 `folo` 和 `bidmonitor` 同步作业能看到结果
 - 公网 `https://api.你的域名/health` 通过
 
 如果要看日志：
 
 ```bash
 ls -lt ~/Library/Logs/codex-home-hosted
+tail -f ~/Library/Logs/codex-home-hosted/bidmonitor.err.log
 tail -f ~/Library/Logs/codex-home-hosted/backend.err.log
 tail -f ~/Library/Logs/codex-home-hosted/cloudflared.err.log
 ```
@@ -308,6 +332,7 @@ Vercel 当前文档：
 
 ```bash
 curl -s http://127.0.0.1:8000/health
+curl -u 你的BidMonitor用户名:你的BidMonitor密码 -s http://127.0.0.1:8080/api/status
 curl -s http://127.0.0.1:9090/health
 ```
 
@@ -371,6 +396,7 @@ cd /Users/aloystang/Desktop/codex
 这个脚本会在备用 Mac 上执行：
 
 - `git pull --ff-only`
+- 重启 `BidMonitor-AI`
 - 重启 `backend`
 - 重启 `folo-bridge`
 - 重启 `cloudflared`
@@ -404,6 +430,8 @@ cd ~/codex
 - `backend/data/exports/`
 - `folo-bridge/data/folo_bridge.db`
 - `folo-bridge/subscriptions.yaml`
+- `BidMonitor-AI/server/data/bids.db`
+- `BidMonitor-AI/server/server_config.json`
 
 ## 9. 常见问题
 
@@ -438,13 +466,17 @@ launchctl print "gui/$(id -u)/com.codex.cloudflared"
 ```bash
 tail -f ~/Library/Logs/codex-home-hosted/intel-sync.err.log
 tail -f ~/Library/Logs/codex-home-hosted/folo-bridge.err.log
+tail -f ~/Library/Logs/codex-home-hosted/bidmonitor.err.log
 ```
 
 再确认：
 
+- `BidMonitor-AI` 是否在线
 - `subscriptions.yaml` 是否有有效 RSS/Atom 地址
 - `FOLO_SYNC_ENABLED=true`
 - `FOLO_BASE_URL=http://127.0.0.1:9090`
+- `BIDMONITOR_BASE_URL=http://127.0.0.1:8080`
+- `BIDMONITOR_PULL_PATH=/api/results`
 
 ## 10. Linear 现在怎么用最合适
 

@@ -40,9 +40,9 @@ EOF
 ```bash
 cd backend
 cat >> .env <<'EOF'
-BIDMONITOR_BASE_URL=http://127.0.0.1:9000
-BIDMONITOR_API_TOKEN=your_bidmonitor_token
-BIDMONITOR_PULL_PATH=/api/intel/items
+BIDMONITOR_BASE_URL=http://127.0.0.1:8080
+BIDMONITOR_API_TOKEN=your_bidmonitor_user:your_bidmonitor_password
+BIDMONITOR_PULL_PATH=/api/results
 INTEL_DEFAULT_CITY=重庆市
 EOF
 ```
@@ -68,6 +68,12 @@ source .venv/bin/activate
 pip install -r requirements.txt
 cp subscriptions.example.yaml subscriptions.yaml
 FOLO_BRIDGE_TOKEN=folo-bridge-token python app.py
+```
+
+如果你是新克隆仓库，先初始化 `BidMonitor-AI` 子模块：
+
+```bash
+git submodule update --init --recursive BidMonitor-AI
 ```
 
 默认管理员账号：`admin / admin123`

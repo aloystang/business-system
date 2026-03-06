@@ -9,12 +9,16 @@ This setup separates the machines:
 
 Use this folder when you want a zero-server deployment path without moving the backend to Vercel or to a paid VPS.
 
+`BidMonitor-AI` is a core local dependency in this setup. Keep it on `127.0.0.1:8080`; do not expose it through Cloudflare.
+The main repository tracks `BidMonitor-AI` as a submodule and reapplies the local home-hosted patch during bootstrap and deploy.
+
 For a copy-paste deployment guide in Chinese, start with [STEP_BY_STEP.zh-CN.md](./STEP_BY_STEP.zh-CN.md).
 
 ## Final Topology
 
 - Vercel hosts the static frontend from `frontend/`
 - the spare Mac runs:
+  - `BidMonitor-AI` on `127.0.0.1:8080`
   - FastAPI backend on `127.0.0.1:8000`
   - `folo-bridge` on `127.0.0.1:9090`
   - `cloudflared` named tunnel
@@ -46,7 +50,7 @@ Do not try to keep SQLite writable on both machines.
 2. Commit and push to the Git repository
 3. Vercel rebuilds the frontend from `frontend/`
 4. SSH into the spare Mac and run `ops/home-hosted/scripts/deploy_from_git.sh`
-5. The spare Mac pulls the latest branch and restarts backend, bridge, tunnel, and one sync job
+5. The spare Mac updates the `BidMonitor-AI` submodule, reapplies the local home-hosted patch, then restarts BidMonitor, backend, bridge, tunnel, and one sync job
 
 This keeps release and runtime responsibilities separate.
 
@@ -73,6 +77,11 @@ EXPORT_DIR=/ABSOLUTE/PATH/TO/codex/backend/data/exports
 FOLO_BASE_URL=http://127.0.0.1:9090
 FOLO_API_TOKEN=replace-with-a-private-token
 FOLO_SYNC_ENABLED=true
+BIDMONITOR_BASE_URL=http://127.0.0.1:8080
+BIDMONITOR_PULL_PATH=/api/results
+BIDMONITOR_USERNAME=replace-with-bidmonitor-user
+BIDMONITOR_PASSWORD=replace-with-bidmonitor-password
+BIDMONITOR_API_TOKEN=replace-with-bidmonitor-user:replace-with-bidmonitor-password
 CLOUDFLARED_TUNNEL_TOKEN=replace-with-cloudflare-named-tunnel-token
 BACKUP_DIR=/ABSOLUTE/PATH/TO/codex/backups/runtime
 BACKUP_RETENTION_DAYS=14
@@ -93,12 +102,13 @@ FOLO_BRIDGE_REFRESH_MINUTES=120
 
 On the spare Mac:
 
-1. clone the repo
-2. create the backend virtualenv and install backend requirements
+1. clone the repo, or let `bootstrap_spare_mac.sh` initialize the `BidMonitor-AI` submodule if you cloned without `--recurse-submodules`
+2. run `bootstrap_spare_mac.sh` to install backend, bridge, and BidMonitor dependencies
 3. install Node only if you also want local frontend preview on the spare Mac
 4. install `cloudflared`
 5. copy the `.env` templates and fill in real values
-6. make the scripts executable:
+6. replace the default BidMonitor credentials and keep `BIDMONITOR_API_TOKEN` in sync
+7. make the scripts executable:
 
 ```bash
 chmod +x /ABSOLUTE/PATH/TO/codex/ops/home-hosted/scripts/*.sh
@@ -133,6 +143,8 @@ VITE_API_BASE=https://api.yourdomain.com
 ## Available Runtime Scripts
 
 - `run_backend.sh`
+- `apply_bidmonitor_patch.sh`
+- `run_bidmonitor.sh`
 - `run_folo_bridge.sh`
 - `run_intel_sync.sh`
 - `run_cloudflared.sh`
@@ -183,6 +195,7 @@ cp /ABSOLUTE/PATH/TO/codex/ops/home-hosted/launchd/*.plist.example "$HOME/Librar
 
 ```bash
 launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.codex.backend.plist"
+launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.codex.bidmonitor.plist"
 launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.codex.folo-bridge.plist"
 launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.codex.cloudflared.plist"
 launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.codex.intel-sync.plist"
@@ -193,6 +206,7 @@ launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.codex.backup.
 
 ```bash
 launchctl print "gui/$(id -u)/com.codex.backend"
+launchctl print "gui/$(id -u)/com.codex.bidmonitor"
 launchctl print "gui/$(id -u)/com.codex.folo-bridge"
 launchctl print "gui/$(id -u)/com.codex.cloudflared"
 launchctl print "gui/$(id -u)/com.codex.intel-sync"
@@ -226,6 +240,7 @@ On the spare Mac:
 
 ```bash
 curl -s http://127.0.0.1:8000/health
+curl -u user:pass -s http://127.0.0.1:8080/api/status
 curl -s http://127.0.0.1:9090/health
 ```
 
@@ -252,8 +267,20 @@ Each snapshot contains:
 - exports
 - optional `folo_bridge.db`
 - optional `subscriptions.yaml`
+- optional `BidMonitor-AI/server/data/bids.db`
+- optional `BidMonitor-AI/server/server_config.json`
 
 Old snapshots are pruned by `BACKUP_RETENTION_DAYS`.
+
+## Submodule Note
+
+`BidMonitor-AI` is not vendored into the main repository. The publishable flow is:
+
+1. pull the main repository
+2. initialize or update the `BidMonitor-AI` submodule
+3. apply `ops/home-hosted/patches/bidmonitor-home-hosted.patch`
+
+The bootstrap and deploy scripts already do steps 2 and 3.
 
 ## Suggested Linear Usage
 

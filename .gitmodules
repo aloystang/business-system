@@ -1,0 +1,3 @@
+[submodule "BidMonitor-AI"]
+	path = BidMonitor-AI
+	url = https://github.com/zhiqianzheng/BidMonitor-AI.git

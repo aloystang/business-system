@@ -19,8 +19,16 @@ BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 git fetch --all --prune
 git pull --ff-only origin "$BRANCH"
 
-launchctl kickstart -k "gui/$(id -u)/com.codex.backend"
+if [ -f "$REPO_DIR/.gitmodules" ]; then
+  git submodule sync -- BidMonitor-AI
+  git submodule update --init --recursive BidMonitor-AI
+fi
+
+/bin/zsh "$REPO_DIR/ops/home-hosted/scripts/apply_bidmonitor_patch.sh"
+
+launchctl kickstart -k "gui/$(id -u)/com.codex.bidmonitor"
 launchctl kickstart -k "gui/$(id -u)/com.codex.folo-bridge"
+launchctl kickstart -k "gui/$(id -u)/com.codex.backend"
 launchctl kickstart -k "gui/$(id -u)/com.codex.cloudflared"
 
 # Run one sync immediately after the deploy to warm the latest data path.
