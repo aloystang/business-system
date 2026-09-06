@@ -9,6 +9,7 @@ from ..database import get_db
 from ..deps import get_current_user, require_perm
 from ..models import Brand, Match, Project
 from ..schemas import AdjustIn, ComputeIn, MatchOut
+from ..services.classification import build_format_index
 
 router = APIRouter(prefix="/api/v1/matches", tags=["匹配"])
 
@@ -35,8 +36,9 @@ def _to_out(m: Match) -> MatchOut:
     )
 
 
-def _persist(db: Session, brand: Brand, project: Project) -> Match:
-    r = matching.compute(brand, project)
+def _persist(db: Session, brand: Brand, project: Project,
+             cat_index: dict[str, str] | None = None) -> Match:
+    r = matching.compute(brand, project, cat_index)
     final = (r.weighted_score or 0.0)
     m = (db.query(Match).filter(Match.brand_id == brand.id, Match.project_id == project.id,
                                 Match.rule_version == r.rule_version).first())
@@ -68,7 +70,7 @@ def compute(body: ComputeIn, db: Session = Depends(get_db),
     project = db.get(Project, body.project_id, options=[joinedload(Project.location)])
     if not brand or not project:
         raise HTTPException(404, "品牌或项目不存在")
-    m = _persist(db, brand, project)
+    m = _persist(db, brand, project, build_format_index(db))
     db.commit(); db.refresh(m)
     return _to_out(m)
 
@@ -113,6 +115,7 @@ def recommended_brands(project_id: int, db: Session = Depends(get_db),
         raise HTTPException(404, "项目不存在")
     brands = db.query(Brand).options(joinedload(Brand.expansion)).filter(
         Brand.is_deleted.is_(False)).all()
-    outs = [_result_to_out(b, project, matching.compute(b, project)) for b in brands]
+    cat_index = build_format_index(db)
+    outs = [_result_to_out(b, project, matching.compute(b, project, cat_index)) for b in brands]
     outs.sort(key=lambda m: (m.final_score if m.final_score is not None else -1), reverse=True)
     return outs

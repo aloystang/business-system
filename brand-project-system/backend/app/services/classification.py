@@ -56,6 +56,21 @@ def validate_project_status(db: Session, project_status: str | None) -> None:
 
 # ---------- 品牌三级业态树校验 ----------
 
+def build_format_index(db: Session) -> dict[str, str]:
+    """业态名 → 其一级(L1)根业态名 的映射，供匹配引擎按树归类。"""
+    nodes = db.query(BrandCategory).filter(BrandCategory.is_active.is_(True)).all()
+    by_id = {n.id: n for n in nodes}
+
+    def root_name(n) -> str:
+        seen = set()
+        while n.parent_id and n.parent_id in by_id and n.id not in seen:
+            seen.add(n.id)
+            n = by_id[n.parent_id]
+        return n.name
+
+    return {n.name: root_name(n) for n in nodes}
+
+
 def _find_category(db: Session, name: str, level: int, parent_id: int | None):
     q = db.query(BrandCategory).filter(
         BrandCategory.name == name, BrandCategory.level == level,

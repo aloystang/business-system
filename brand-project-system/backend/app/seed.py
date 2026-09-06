@@ -292,12 +292,14 @@ def seed():
         if not db.query(Unit).first():
             _seed_leasing(db)
 
-        # 出租台账落库后，按经营数据自动重分项目状态（如龙兴有生效租约→已开业）
+        # 为每个项目按业态补齐经营台账示例（≥10 铺位 + 商户/租约/收费 + 月度成本），幂等
         db.flush()
-        classification.recompute_all_statuses(db)
+        from .seed_ops import seed_operation_samples
+        ops_result = seed_operation_samples(db)   # 内部会重分状态并 commit
 
         db.commit()
-        print("✅ 初始化完成：管理员 + 7 个真实项目 + 6 个模拟品牌 + 龙兴出租经营台账样例。")
+        print("✅ 初始化完成：管理员 + 真实项目 + 模拟品牌 + 全项目经营台账示例。")
+        print(f"   台账示例：{ops_result}")
         print(f"   登录：{settings.admin_username} / {settings.admin_password}")
     finally:
         db.close()

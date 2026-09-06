@@ -25,6 +25,27 @@ def _project(*, ptype="体育场馆商业", city="重庆市", formats="零售;�
     return p
 
 
+def test_format_exact_hit_scores_100():
+    b = _brand(l1="零售")
+    p = _project(formats="零售;文体娱乐")
+    assert matching._dim_format(b, p) == 100
+
+
+def test_format_same_l1_family_via_tree_scores_75():
+    # 品牌一级=零售；项目只招 服饰鞋包(零售的二级)。无精确命中，但同属零售大类 → 75
+    b = _brand(l1="零售")
+    p = _project(formats="服饰鞋包")
+    idx = {"零售": "零售", "服饰鞋包": "零售"}
+    assert matching._dim_format(b, p, idx) == 75
+
+
+def test_format_different_family_scores_25():
+    b = _brand(l1="零售")
+    p = _project(formats="餐饮")
+    idx = {"零售": "零售", "餐饮": "餐饮"}
+    assert matching._dim_format(b, p, idx) == 25
+
+
 def test_hard_gate_stadium_rejected():
     b = _brand(stadium=False)
     r = matching.compute(b, _project(ptype="体育场馆商业"))

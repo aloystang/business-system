@@ -54,16 +54,23 @@ def _grade_of(score: float) -> str:
 
 # ---------- 各维度打分（返回 0/25/50/75/100 或 None=缺资料） ----------
 
-def _dim_format(b: Brand, p: Project) -> int | None:
-    fmt = b.l1_category
+def _dim_format(b: Brand, p: Project, cat_index: dict[str, str] | None = None) -> int | None:
+    """业态维度：基于三级业态树标准化匹配。
+    - 品牌任一层级业态命中项目目标业态 → 100（精确同业态）
+    - 品牌一级业态与某目标业态归到同一 L1 根 → 75（同业态大类，需业态树）
+    - 否则 → 25；缺资料 → None
+    """
     targets = _split(p.target_formats)
-    if not fmt or not targets:
+    brand_path = [x for x in (b.l3_category, b.l2_category, b.l1_category) if x]
+    if not brand_path or not targets:
         return None
-    if fmt in targets:
+    if set(brand_path) & set(targets):
         return 100
-    # 二级业态或近似
-    if b.l2_category and any(b.l2_category in t or t in (b.l2_category or "") for t in targets):
-        return 75
+    if cat_index:
+        def root(name: str) -> str:
+            return cat_index.get(name, name)
+        if root(b.l1_category or "") in {root(t) for t in targets}:
+            return 75
     return 25
 
 
@@ -124,9 +131,10 @@ def _dim_cooperation_will(b: Brand, p: Project) -> int | None:
     return round(sum(vals) / len(vals) / 25) * 25
 
 
-def compute(brand: Brand, project: Project) -> MatchResult:
+def compute(brand: Brand, project: Project,
+            cat_index: dict[str, str] | None = None) -> MatchResult:
     dims: dict[str, int | None] = {
-        "format": _dim_format(brand, project),
+        "format": _dim_format(brand, project, cat_index),
         "property_condition": _dim_property(brand, project),
         "city_region": _dim_city_region(brand, project),
         "positioning_customer": _dim_positioning(brand, project),
