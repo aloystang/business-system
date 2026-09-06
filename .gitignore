@@ -6,6 +6,22 @@ venv/
 dist/
 backups/
 *.log
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Independent local projects and data environments
+/stock_review_system/
+/fitness-miniapp/
+/qlib-lab/
+
+# Local shortcuts into the commercial system repository
+/Start Management System.command
+/启动管理系统.command
+/打开信息抓取.command
+
+# Temp doc-review scratch (page renders, layout dumps)
+.tmp_doc_review/
 
 # Local data
 /data.sqlite
