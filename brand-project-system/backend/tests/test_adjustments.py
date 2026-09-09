@@ -53,6 +53,16 @@ def test_current_mix_totals_and_formats(sdb):
     assert fmts["零售"]["rent"] == 90000
 
 
+def test_unit_layout_shape(sdb):
+    s, p = sdb
+    lay = tenant_mix.unit_layout(s, p.id)
+    assert lay["floors"] and len(lay["units"]) == 3
+    u1 = next(u for u in lay["units"] if u["status"] == "在租" and u["tenant"])
+    assert u1["format"] and u1["rent"] > 0
+    vac = next(u for u in lay["units"] if u["status"] == "空置")
+    assert vac["tenant"] is None and vac["format"] is None
+
+
 def test_plan_summary_forecasts_uplift(sdb):
     s, p = sdb
     vacant = s.query(Unit).filter(Unit.project_id == p.id, Unit.status == "空置").first()

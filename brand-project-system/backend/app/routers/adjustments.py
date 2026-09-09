@@ -32,6 +32,14 @@ def get_tenant_mix(project_id: int, db: Session = Depends(get_db),
     return tenant_mix.current_mix(db, project_id)
 
 
+@router.get("/{project_id}/unit-layout")
+def get_unit_layout(project_id: int, db: Session = Depends(get_db),
+                    _=Depends(get_current_user)):
+    """2.5D 铺位沙盘数据源：逐铺位(楼层/面积/状态/租户/业态/租金/调改计划)，已按楼层排序。"""
+    _project_or_404(db, project_id)
+    return tenant_mix.unit_layout(db, project_id)
+
+
 @router.get("/{project_id}/adjustment-plan")
 def get_adjustment_plan(project_id: int, db: Session = Depends(get_db),
                         _=Depends(get_current_user)):

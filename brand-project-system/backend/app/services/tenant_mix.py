@@ -37,6 +37,56 @@ def _bucket_add(agg: dict, key: str, units: int, area: float, rent: float) -> No
     b["rent"] = _round(b["rent"] + rent)
 
 
+_FLOOR_ORDER = {"B3": -3, "B2": -2, "B1": -1}
+
+
+def _floor_key(f: str | None) -> int:
+    f = f or ""
+    if f in _FLOOR_ORDER:
+        return _FLOOR_ORDER[f]
+    if f[:1] in ("L", "F") and f[1:].isdigit():
+        return int(f[1:])
+    return 99
+
+
+def unit_layout(db: Session, project_id: int) -> dict:
+    """2.5D 铺位沙盘数据源：逐铺位一条（含现租户/业态/租金 + 调改计划），已按楼层排序。"""
+    units = db.query(Unit).filter(Unit.project_id == project_id).all()
+    merch = {m.unit_id: m for m in db.query(Merchant).filter(
+        Merchant.project_id == project_id).all() if m.unit_id is not None}
+    rent_by_unit: dict[int, float] = {}
+    for ll in db.query(Lease).filter(Lease.project_id == project_id,
+                                     Lease.lease_status == "生效").all():
+        if ll.unit_id is not None:
+            rent_by_unit[ll.unit_id] = rent_by_unit.get(ll.unit_id, 0.0) + (ll.base_rent or 0.0)
+    plans = {p.unit_id: p for p in db.query(UnitAdjustmentPlan).filter(
+        UnitAdjustmentPlan.project_id == project_id).all()}
+
+    rows = []
+    for u in units:
+        occ = u.status in _RENTED
+        m = merch.get(u.id)
+        p = plans.get(u.id)
+        area = u.rentable_area_m2 or 0.0
+        rows.append({
+            "unit_id": u.id, "unit_code": u.unit_code, "floor": u.floor or "L1",
+            "area": _round(area), "status": u.status,
+            "tenant": (m.name if (m and occ) else None),
+            "format": (m.business_format if (m and occ) else None),
+            "rent": _round(rent_by_unit.get(u.id, 0.0)),
+            "plan": ({"action": p.action, "to_format": p.to_format,
+                      "target_brand_id": p.target_brand_id,
+                      "expected_rent": _round(p.expected_rent) if p.expected_rent is not None
+                      else (_round((p.expected_rent_psm or 0.0) * area)
+                            if p.expected_rent_psm is not None else None),
+                      "plan_status": p.plan_status,
+                      "plan_date": p.plan_date.isoformat() if p.plan_date else None} if p else None),
+        })
+    rows.sort(key=lambda r: (_floor_key(r["floor"]), r["unit_code"]))
+    floors = sorted({r["floor"] for r in rows}, key=_floor_key)
+    return {"project_id": project_id, "floors": floors, "units": rows}
+
+
 def current_mix(db: Session, project_id: int) -> dict:
     """现有业态构成：按业态汇总铺位数/计租面积/月租金 + 占比；空置单列；并按一级业态归总。"""
     units, rent_by_unit, fmt_by_unit = _unit_context(db, project_id)
