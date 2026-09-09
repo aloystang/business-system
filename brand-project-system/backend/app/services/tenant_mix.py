@@ -1,5 +1,8 @@
-"""业态构成与调改测算：现有业态分布 + 逐铺位调改计划 → 调改后预测（租金/坪效/出租率/NOI）。"""
+"""业态构成与调改测算：现有业态分布 + 逐铺位调改计划 → 调改后预测（租金/坪效/出租率/NOI）
+   + 按季度、跟随租约到期的分批调改路线图。"""
 from __future__ import annotations
+
+from datetime import date
 
 from sqlalchemy.orm import Session
 
@@ -9,6 +12,27 @@ from .classification import build_format_index
 _RENTED = ("在租", "自营")
 _VACANT_LABEL = "空置"
 _UNLABELED = "未标注"
+
+
+def _quarter(d: date) -> str:
+    return f"{d.year}Q{(d.month - 1) // 3 + 1}"
+
+
+def _quarter_key(q: str) -> tuple[int, int]:
+    y, n = q.split("Q")
+    return (int(y), int(n))
+
+
+def _active_lease_end(db: Session, project_id: int) -> dict[int, date]:
+    """每个铺位现行(生效)租约的到期日；同铺多约取最晚。"""
+    out: dict[int, date] = {}
+    for ll in db.query(Lease).filter(Lease.project_id == project_id,
+                                     Lease.lease_status == "生效").all():
+        if ll.unit_id is not None and ll.end_date is not None:
+            cur = out.get(ll.unit_id)
+            if cur is None or ll.end_date > cur:
+                out[ll.unit_id] = ll.end_date
+    return out
 
 
 def _round(x: float | None) -> float:
@@ -61,6 +85,7 @@ def unit_layout(db: Session, project_id: int) -> dict:
             rent_by_unit[ll.unit_id] = rent_by_unit.get(ll.unit_id, 0.0) + (ll.base_rent or 0.0)
     plans = {p.unit_id: p for p in db.query(UnitAdjustmentPlan).filter(
         UnitAdjustmentPlan.project_id == project_id).all()}
+    lease_end = _active_lease_end(db, project_id)
 
     rows = []
     for u in units:
@@ -68,12 +93,14 @@ def unit_layout(db: Session, project_id: int) -> dict:
         m = merch.get(u.id)
         p = plans.get(u.id)
         area = u.rentable_area_m2 or 0.0
+        end = lease_end.get(u.id)
         rows.append({
             "unit_id": u.id, "unit_code": u.unit_code, "floor": u.floor or "L1",
             "area": _round(area), "status": u.status,
             "tenant": (m.name if (m and occ) else None),
             "format": (m.business_format if (m and occ) else None),
             "rent": _round(rent_by_unit.get(u.id, 0.0)),
+            "lease_end": end.isoformat() if end else None,
             "plan": ({"action": p.action, "to_format": p.to_format,
                       "target_brand_id": p.target_brand_id,
                       "expected_rent": _round(p.expected_rent) if p.expected_rent is not None
@@ -214,3 +241,90 @@ def plan_summary(db: Session, project_id: int) -> dict:
             "planned_by_format": sorted(planned_by_fmt.values(),
                                         key=lambda r: r["rent"], reverse=True),
             "summary": summary}
+
+
+def adjustment_roadmap(db: Session, project_id: int, today: date | None = None) -> dict:
+    """按季度、跟随租约到期的分批调改路线图（当前口径：等到期自然调整）。
+
+    每个有调改计划的铺位，其“最早可执行季度”取自：
+      - 空置铺 → 立即（今季）；
+      - 在租铺 → 现租约到期日所在季度（到期才动）。
+    输出：分批(batches) + 累积出租率/租金曲线 + 各季度到期窗口(expiry_windows)。
+    """
+    today = today or date.today()
+    units, rent_by_unit, fmt_by_unit = _unit_context(db, project_id)
+    unit_by_id = {u.id: u for u in units}
+    lease_end = _active_lease_end(db, project_id)
+    plans = {p.unit_id: p for p in db.query(UnitAdjustmentPlan).filter(
+        UnitAdjustmentPlan.project_id == project_id).all()}
+    total_units = len(units)
+    base_occupied = sum(1 for u in units if u.status in _RENTED)
+
+    # 分批：有计划的铺位 → 归入“最早可执行季度”
+    buckets: dict[str, list] = {}
+    for uid, p in plans.items():
+        u = unit_by_id.get(uid)
+        if not u:
+            continue
+        occ = u.status in _RENTED
+        when = today if not occ else (lease_end.get(uid) or (p.plan_date or today))
+        q = _quarter(when)
+        area = u.rentable_area_m2 or 0.0
+        cur_rent = rent_by_unit.get(uid, 0.0)
+        exp_rent = (p.expected_rent if p.expected_rent is not None
+                    else (p.expected_rent_psm or 0.0) * area if p.expected_rent_psm is not None
+                    else cur_rent)
+        buckets.setdefault(q, []).append({
+            "unit_id": uid, "unit_code": u.unit_code, "floor": u.floor,
+            "action": p.action, "from_format": p.from_format or fmt_by_unit.get(uid),
+            "to_format": p.to_format, "current_rent": _round(cur_rent),
+            "expected_rent": _round(exp_rent), "rent_delta": _round(exp_rent - cur_rent),
+            "lease_end": lease_end.get(uid).isoformat() if lease_end.get(uid) else None,
+            "fills_vacancy": not occ,
+        })
+
+    batches, cum_rent, cum_new_occ = [], 0.0, 0
+    for q in sorted(buckets, key=_quarter_key):
+        items = buckets[q]
+        rent_delta = _round(sum(i["rent_delta"] for i in items))
+        area_freed = _round(sum((unit_by_id[i["unit_id"]].rentable_area_m2 or 0.0) for i in items))
+        cum_rent = _round(cum_rent + rent_delta)
+        cum_new_occ += sum(1 for i in items if i["fills_vacancy"])
+        batches.append({
+            "quarter": q, "unit_count": len(items), "area_freed": area_freed,
+            "rent_delta": rent_delta, "cum_rent_delta": cum_rent,
+            "cum_occupancy_rate": round((base_occupied + cum_new_occ) / total_units, 4)
+            if total_units else 0.0,
+            "units": items,
+        })
+
+    # 到期窗口：所有在租铺位按到期季度分布（含未规划的 → 未来可调机会）
+    win: dict[str, dict] = {}
+    for u in units:
+        if u.status not in _RENTED:
+            continue
+        end = lease_end.get(u.id)
+        if not end:
+            continue
+        q = _quarter(end)
+        w = win.setdefault(q, {"quarter": q, "expiring_units": 0, "expiring_area": 0.0,
+                               "planned": 0})
+        w["expiring_units"] += 1
+        w["expiring_area"] = _round(w["expiring_area"] + (u.rentable_area_m2 or 0.0))
+        if u.id in plans:
+            w["planned"] += 1
+    expiry_windows = [win[q] for q in sorted(win, key=_quarter_key)]
+
+    return {
+        "project_id": project_id, "policy": "等到期自然调整",
+        "summary": {
+            "planned_units": sum(len(v) for v in buckets.values()),
+            "batch_count": len(batches),
+            "first_quarter": batches[0]["quarter"] if batches else None,
+            "last_quarter": batches[-1]["quarter"] if batches else None,
+            "total_rent_delta": batches[-1]["cum_rent_delta"] if batches else 0.0,
+            "current_occupancy_rate": round(base_occupied / total_units, 4) if total_units else 0.0,
+        },
+        "batches": batches,
+        "expiry_windows": expiry_windows,
+    }

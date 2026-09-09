@@ -48,6 +48,14 @@ def get_adjustment_plan(project_id: int, db: Session = Depends(get_db),
     return tenant_mix.plan_summary(db, project_id)
 
 
+@router.get("/{project_id}/adjustment-roadmap")
+def get_adjustment_roadmap(project_id: int, db: Session = Depends(get_db),
+                           _=Depends(get_current_user)):
+    """分批调改路线图：按季度、跟随租约到期分批，含累积出租率/租金曲线与到期窗口。"""
+    _project_or_404(db, project_id)
+    return tenant_mix.adjustment_roadmap(db, project_id)
+
+
 @router.put("/{project_id}/adjustment-plan/{unit_id}")
 def upsert_plan(project_id: int, unit_id: int, body: AdjustmentPlanIn,
                 db: Session = Depends(get_db),

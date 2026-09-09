@@ -10,6 +10,16 @@ import random
 from datetime import date
 
 from .database import SessionLocal
+
+
+def _add_months(d: date, n: int) -> date:
+    m = d.month - 1 + n
+    return date(d.year + m // 12, m % 12 + 1, min(d.day, 28))
+
+
+# 让示例租约到期日打散在未来 ~8 个季度（12~32 个月），路线图才有分批层次
+def _staggered_end(start: date, key: int) -> date:
+    return _add_months(start, 12 + (key * 5) % 21)
 from .models import (
     Lease, Merchant, Project, ProjectCost, Receivable, Unit, UnitAdjustmentPlan,
 )
@@ -102,7 +112,8 @@ def generate_for_project(db, p: Project, rng: random.Random) -> int:
         lease = Lease(lease_code=f"LS-{p.project_code}-{seq:02d}",
                       contract_no=f"HT-{p.project_code}-{seq:03d}", merchant_id=m.id,
                       project_id=p.id, unit_id=u.id, start_date=date(2025, 6, 1),
-                      end_date=date(2030, 5, 31), rent_mode="固定租金", base_rent=base_rent,
+                      end_date=_staggered_end(date(2025, 6, 1), seq + (p.id * 3)),
+                      rent_mode="固定租金", base_rent=base_rent,
                       management_fee=mgmt, deposit=base_rent * 3, lease_status="生效",
                       source_system=_SRC)
         db.add(lease); db.flush()
@@ -170,6 +181,20 @@ def _seed_adjustment_samples(db, p: Project, rng: random.Random) -> int:
             reason="铺位改造升级，提升租金坪效"))
         made += 1
     return made
+
+
+def restagger_lease_expiries(db) -> int:
+    """把存量示例租约里"到期日都一样"的情况打散，供路线图分批演示。仅动 ops_sample/seed 来源。"""
+    changed = 0
+    leases = db.query(Lease).filter(Lease.lease_status == "生效").all()
+    for ll in leases:
+        start = ll.start_date or date(2025, 6, 1)
+        new_end = _staggered_end(start, (ll.id or 0) + (ll.project_id or 0) * 3)
+        if ll.end_date != new_end:
+            ll.end_date = new_end
+            changed += 1
+    db.commit()
+    return changed
 
 
 def seed_operation_samples(db) -> dict:

@@ -77,6 +77,19 @@ def test_plan_summary_forecasts_uplift(sdb):
     assert out["summary"]["delta"]["noi"] == 30000.0
 
 
+def test_roadmap_buckets_by_quarter(sdb):
+    s, p = sdb
+    vac = s.query(Unit).filter(Unit.project_id == p.id, Unit.status == "空置").first()
+    s.add(UnitAdjustmentPlan(project_id=p.id, unit_id=vac.id, action="新招商",
+                             to_format="餐饮", expected_rent_psm=200, plan_status="审批中"))
+    s.commit()
+    rm = tenant_mix.adjustment_roadmap(s, p.id)
+    assert rm["summary"]["planned_units"] == 1 and rm["summary"]["batch_count"] == 1
+    b = rm["batches"][0]
+    assert b["unit_count"] == 1 and b["rent_delta"] == 30000.0   # 150㎡ × 200
+    assert b["cum_occupancy_rate"] > rm["summary"]["current_occupancy_rate"]  # 空置招商→出租率升
+
+
 # ---------- API 层 ----------
 
 def _session():
