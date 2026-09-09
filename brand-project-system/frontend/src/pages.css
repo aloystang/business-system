@@ -1096,6 +1096,7 @@ kbd,
 .operationTabs button.active { color: #fff; background: var(--accent); box-shadow: 0 6px 14px rgba(220,106,53,.2); }
 .operationToolbar > .glassSelect { min-height: 42px; padding: 0 11px; border: 1px solid var(--glass-border); border-radius: 10px; background: rgba(255,255,255,.56); }
 .operationToolbar > .glassSelect:nth-of-type(1) { margin-left: auto; min-width: 180px; }
+.operationLoading { color: var(--muted); font-size: var(--type-caption); white-space: nowrap; }
 .operationExport { min-height: 42px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid rgba(220,106,53,.28); border-radius: 10px; color: #a64b29; background: rgba(255,255,255,.58); cursor: pointer; }
 .operationKpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); overflow: hidden; margin-bottom: 13px; border: 1px solid var(--glass-border); border-radius: 18px; background: rgba(255,255,255,.6); box-shadow: var(--glass-shadow); }
 .operationKpis > div { min-width: 0; padding: 16px 18px; border-right: 1px solid var(--line-soft); }
@@ -1120,6 +1121,27 @@ kbd,
 .operationLegend span { display: flex; align-items: center; gap: 6px; }
 .operationLegend i { width: 8px; height: 8px; border-radius: 50%; }
 .operationLegend .incomeDot { background: var(--accent); }.operationLegend .costDot { background: var(--cyan); }
+.monthlyHistoryPanel { min-height: 330px; padding-bottom: 13px; overflow: hidden; }
+.monthlyHistoryHead { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 18px; border-bottom: 1px solid var(--line-soft); }
+.monthlyHistoryHead > div:first-child strong,
+.monthlyHistoryHead > div:first-child span { display: block; }
+.monthlyHistoryHead > div:first-child strong { font-size: var(--type-title); }
+.monthlyHistoryHead > div:first-child span { margin-top: 4px; color: var(--muted); font-size: var(--type-caption); }
+.monthlyHistoryHead .operationLegend { padding: 0; }
+.historyLoading { min-height: 240px; display: grid; place-items: center; color: var(--muted); font-size: var(--type-meta); }
+.monthlyHistoryBars { height: 142px; display: grid; grid-template-columns: repeat(12, minmax(26px, 1fr)); align-items: end; gap: 7px; padding: 15px 18px 7px; border-bottom: 1px solid var(--line-soft); }
+.monthlyBarGroup { min-width: 0; display: grid; grid-template-rows: 105px 18px; gap: 5px; align-items: end; }
+.monthlyBarGroup > div { height: 105px; display: flex; align-items: end; justify-content: center; gap: 3px; }
+.monthlyBarGroup i { width: min(10px, 42%); min-height: 3px; display: block; border-radius: 4px 4px 1px 1px; transition: height .24s ease; }
+.monthlyBarGroup .historyIncomeBar { background: linear-gradient(180deg, #e58758, var(--accent)); }
+.monthlyBarGroup .historyCostBar { background: linear-gradient(180deg, #77a5df, var(--cyan)); }
+.monthlyBarGroup.empty i { background: rgba(90,101,110,.13); }
+.monthlyBarGroup > span { overflow: hidden; color: var(--muted); font-size: 10px; text-align: center; white-space: nowrap; }
+.monthlyHistoryTable { max-height: 194px; overflow: auto; margin: 10px 14px 0; border: 1px solid var(--line-soft); border-radius: 10px; background: rgba(255,255,255,.32); }
+.monthlyHistoryTable > div { min-width: 650px; display: grid; grid-template-columns: 100px repeat(5, minmax(90px, 1fr)); align-items: center; gap: 9px; min-height: 35px; padding: 0 12px; border-bottom: 1px solid var(--line-soft); color: #56616a; font-size: var(--type-caption); }
+.monthlyHistoryTable > div:last-child { border-bottom: 0; }
+.monthlyHistoryTable .monthlyHistoryTableHead { position: sticky; top: 0; z-index: 1; min-height: 38px; color: #59636c; background: rgba(247,247,245,.94); font-size: var(--type-meta); font-weight: 650; }
+.monthlyHistoryTable strong { color: var(--text); font-size: var(--type-meta); }
 .incomeStructure { display: grid; grid-template-columns: 136px 1fr; align-content: start; }
 .incomeStructure .sectionTitle { grid-column: 1 / -1; }
 .incomeRing { width: 118px; height: 118px; align-self: center; justify-self: center; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--accent) 0 62%, var(--cyan) 62% 84%, var(--green) 84% 95%, rgba(111,124,134,.28) 95% 100%); }
@@ -1362,3 +1384,31 @@ button.operationProjectMetric:hover { border-color: rgba(220,106,53,.35); backgr
   .userSecurityKpis > div:nth-child(2) { border-right:0; }
   .userSecurityKpis > div:nth-child(n+3) { border-top:1px solid var(--line-soft); }
 }
+
+/* 项目档案 · 业态与调改 */
+.tenantMixPanel { margin-top: 18px; display: flex; flex-direction: column; gap: 18px; }
+.tenantMixHint { margin: 0; color: var(--muted); font-size: var(--type-meta); }
+.tenantMixSection > h3 { margin: 0 0 10px; font-size: var(--type-body); font-weight: 680; color: #2f3a44; }
+.tenantMixSection > h3 em { color: var(--muted); font-weight: 500; font-size: var(--type-meta); font-style: normal; }
+.tenantMixStat { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 10px; color: #4a5560; font-size: var(--type-meta); }
+.tenantMixStat span { padding: 3px 10px; border-radius: 6px; background: rgba(19, 61, 99, .06); }
+.tenantMixTable { border: 1px solid var(--line-soft); border-radius: 10px; overflow: hidden; }
+.tenantMixHead, .tenantMixRow { display: grid; grid-template-columns: 1.4fr .6fr .9fr .9fr .7fr; align-items: center; gap: 8px; padding: 9px 14px; font-size: var(--type-body); }
+.tenantMixHead { background: rgba(19, 61, 99, .08); color: #59636c; font-weight: 650; letter-spacing: .3px; }
+.tenantMixRow { border-top: 1px solid var(--line-soft); color: #404a52; }
+.tenantMixRow strong { font-weight: 620; }
+.tenantMixRow.vacantRow { color: #9aa4ad; background: rgba(120,130,140,.04); }
+.tenantMixHead.planHead, .planRow { grid-template-columns: 1fr .7fr 1.6fr .9fr .7fr; }
+.incomeText { color: #1f8a54; }
+.planAction { display: inline-flex; justify-content: center; padding: 2px 8px; border-radius: 5px; font-size: var(--type-caption); background: rgba(19,61,99,.08); color: #3a6ea5; width: fit-content; }
+.planAction.act-置换 { background: rgba(196,88,40,.14); color: #b4531d; }
+.planAction.act-新招商 { background: rgba(31,138,84,.14); color: #1f8a54; }
+.planAction.act-改造 { background: rgba(150,103,20,.16); color: #8a6a12; }
+.tenantMixCompare { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.tenantMixCompare > div { border: 1px solid var(--line-soft); border-radius: 10px; padding: 11px 14px; display: flex; flex-direction: column; gap: 3px; }
+.tenantMixCompare span { color: var(--muted); font-size: var(--type-caption); }
+.tenantMixCompare strong { font-size: var(--type-body); font-weight: 650; color: #2f3a44; }
+.tenantMixCompare b { font-size: var(--type-caption); font-weight: 600; color: var(--muted); }
+.tenantMixCompare b.up { color: #1f8a54; }
+.tenantMixCompare b.down { color: #c4552d; }
+@media (max-width: 760px) { .tenantMixCompare { grid-template-columns: 1fr; } }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { getOperations, getProjectOperations } from './api'
+import { getOperations, getProjectOperations, getTenantMix, getAdjustmentPlan, resolveProjectIdByName } from './api'
 import {
   Activity,
   ArrowRight,
@@ -333,15 +333,78 @@ function DetailCard({ project, onMatch, onOpen }) {
   </aside>
 }
 
+function ProjectTenantMixPanel({ projectName }) {
+  const [state, setState] = React.useState({ loading: true, mix: null, plan: null, error: false })
+  React.useEffect(() => {
+    let alive = true
+    ;(async () => {
+      try {
+        const id = await resolveProjectIdByName(projectName)
+        if (!id) { if (alive) setState({ loading: false, mix: null, plan: null, error: false }); return }
+        const [mix, plan] = await Promise.all([getTenantMix(id), getAdjustmentPlan(id)])
+        if (alive) setState({ loading: false, mix, plan, error: false })
+      } catch {
+        if (alive) setState({ loading: false, mix: null, plan: null, error: true })
+      }
+    })()
+    return () => { alive = false }
+  }, [projectName])
+
+  const wan = (x) => `${((x || 0) / 10000).toFixed(1)}万`
+  const pct = (x) => `${((x || 0) * 100).toFixed(1)}%`
+  if (state.loading) return <div className="tenantMixPanel"><p className="tenantMixHint">正在载入业态与调改数据…</p></div>
+  if (state.error) return <div className="tenantMixPanel"><p className="tenantMixHint">后端未连接，暂无法载入业态与调改数据。</p></div>
+  if (!state.mix) return <div className="tenantMixPanel"><p className="tenantMixHint">该项目在后端暂无台账数据，无法生成业态与调改。</p></div>
+
+  const { mix, plan } = state
+  const s = plan?.summary
+  const cur = s?.current, plan2 = s?.planned, delta = s?.delta
+  return <div className="tenantMixPanel">
+    <div className="tenantMixSection">
+      <h3>现有业态构成</h3>
+      <div className="tenantMixStat">
+        <span>铺位 {mix.totals.unit_total} 个</span><span>出租率 {pct(mix.totals.occupancy_rate)}</span>
+        <span>月租金 {wan(mix.totals.rent_total)}</span><span>空置 {mix.vacant.units} 个</span>
+      </div>
+      <div className="tenantMixTable">
+        <div className="tenantMixHead"><span>业态</span><span>铺位</span><span>计租面积㎡</span><span>月租金</span><span>租金占比</span></div>
+        {mix.by_format.map((r) => <div className="tenantMixRow" key={r.format}><strong>{r.format}</strong><span>{r.units}</span><span>{Math.round(r.area)}</span><span className="incomeText">{wan(r.rent)}</span><span>{pct(r.rent_pct)}</span></div>)}
+        {mix.vacant.units > 0 && <div className="tenantMixRow vacantRow"><strong>空置</strong><span>{mix.vacant.units}</span><span>{Math.round(mix.vacant.area)}</span><span>—</span><span>—</span></div>}
+      </div>
+    </div>
+
+    {s && <div className="tenantMixSection">
+      <h3>调改后测算 <em>（现状 → 计划）</em></h3>
+      <div className="tenantMixCompare">
+        <div><span>出租率</span><strong>{pct(cur.occupancy_rate)} → {pct(plan2.occupancy_rate)}</strong><b className={delta.occupancy_pts >= 0 ? 'up' : 'down'}>{delta.occupancy_pts >= 0 ? '+' : ''}{(delta.occupancy_pts * 100).toFixed(1)}pt</b></div>
+        <div><span>月租金</span><strong>{wan(cur.rent_total)} → {wan(plan2.rent_total)}</strong><b className={delta.rent_total >= 0 ? 'up' : 'down'}>{delta.rent_total >= 0 ? '+' : ''}{wan(delta.rent_total)}</b></div>
+        <div><span>租金坪效</span><strong>{cur.rent_psm} → {plan2.rent_psm}</strong><b>元/㎡/月</b></div>
+        <div><span>经营净收益 NOI</span><strong>{wan(cur.noi)} → {wan(plan2.noi)}</strong><b className={delta.noi >= 0 ? 'up' : 'down'}>{delta.noi >= 0 ? '+' : ''}{wan(delta.noi)}</b></div>
+      </div>
+    </div>}
+
+    <div className="tenantMixSection">
+      <h3>调改计划清单 <em>（{plan?.items?.length || 0} 条）</em></h3>
+      {plan?.items?.length ? <div className="tenantMixTable">
+        <div className="tenantMixHead planHead"><span>铺位</span><span>动作</span><span>业态调整</span><span>预期月租金</span><span>状态</span></div>
+        {plan.items.map((it) => <div className="tenantMixRow planRow" key={it.unit_id}><strong>{it.unit_code}</strong><span className={`planAction act-${it.action}`}>{it.action}</span><span>{(it.from_format || '空置')} → {it.to_format || '—'}</span><span className="incomeText">{wan(it.expected_rent)}</span><span>{it.plan_status}</span></div>)}
+      </div> : <p className="tenantMixHint">暂无调改计划。</p>}
+    </div>
+  </div>
+}
+
 function ProjectArchive({ project }) {
-  return <div className="archiveGrid">
+  return <>
+    <div className="archiveGrid">
     <div><span>项目编号</span><strong>XS-PRJ-{String(project.id).padStart(4, '0')}</strong></div><div><span>项目等级</span><strong>{project.grade} 级</strong></div>
     <div><span>项目类型</span><strong>{project.type}</strong></div><div><span>招商状态</span><strong>{project.status}</strong></div>
     <div><span>经营面积</span><strong>{project.area}</strong></div><div><span>综合出租率</span><strong>{project.occupancy}</strong></div>
     <div><span>本月经营收入</span><strong>{project.revenue}</strong></div><div><span>本月经营成本</span><strong>{project.cost}</strong></div>
     <div><span>租金收缴率</span><strong>{project.collection}</strong></div><div><span>项目负责人</span><strong>{project.owner}</strong></div>
     <div className="full"><span>项目定位</span><p>运动生活目的地，覆盖赛事消费、家庭客群与周边社区的复合型商业场景。</p></div>
-  </div>
+    </div>
+    <ProjectTenantMixPanel projectName={project.name} />
+  </>
 }
 
 function BrandArchive({ brand }) {
@@ -562,8 +625,7 @@ function operationHistoryRow(data, code) {
   const noi = isPortfolio ? data.kpi.noi : data?.noi
   const occupancy = isPortfolio ? data.kpi.occupancy_rate : data?.occupancy?.occupancy_rate
   const collection = isPortfolio ? data.kpi.collect_rate : data?.revenue?.collect_rate
-  const unitTotal = isPortfolio ? data.kpi.unit_total : data?.occupancy?.unit_total
-  return { code, label: formatOperationPeriod(code), revenue: revenue || 0, cost: cost || 0, noi: noi || 0, occupancy: occupancy || 0, collection: collection || 0, hasData: Boolean(revenue || cost || unitTotal) }
+  return { code, label: formatOperationPeriod(code), revenue: revenue || 0, cost: cost || 0, noi: noi || 0, occupancy: occupancy || 0, collection: collection || 0, hasData: Boolean(revenue || cost) }
 }
 
 function MonthlyOperationHistory({ rows, loading, title = '月度经营历史', meta }) {

@@ -81,3 +81,20 @@ export async function getProjectOperations(id, period) {
   const query = period ? `?period=${encodeURIComponent(period)}` : ''
   return apiGet(`/projects/${id}/operations${query}`)
 }
+
+// 业态与调改：现有业态构成 + 逐铺位调改计划及测算
+export async function getTenantMix(id) {
+  return apiGet(`/projects/${id}/tenant-mix`)
+}
+
+export async function getAdjustmentPlan(id) {
+  return apiGet(`/projects/${id}/adjustment-plan`)
+}
+
+// 项目名 → 后端真实 id（前端项目卡列表仍是演示数据时用于对接台账）
+export async function resolveProjectIdByName(name) {
+  const norm = (s) => (s || '').replace(/\s+/g, '')
+  const rows = await getProjects()
+  const hit = rows.find((p) => norm(p.name) === norm(name))
+  return hit ? hit.id : null
+}

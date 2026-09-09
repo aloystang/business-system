@@ -137,6 +137,19 @@ class GeocodeResultOut(BaseModel):
     candidates: list[dict] = []
 
 
+class AdjustmentPlanIn(BaseModel):
+    action: str
+    to_format: str | None = None
+    from_format: str | None = None
+    target_brand_id: int | None = None
+    expected_rent: float | None = None
+    expected_rent_psm: float | None = None
+    plan_status: str = "草案"
+    plan_date: str | None = None
+    reason: str | None = None
+    owner: str | None = None
+
+
 class ProjectCreate(BaseModel):
     project_code: str
     project_name: str

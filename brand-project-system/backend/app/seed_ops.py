@@ -10,7 +10,9 @@ import random
 from datetime import date
 
 from .database import SessionLocal
-from .models import Lease, Merchant, Project, ProjectCost, Receivable, Unit
+from .models import (
+    Lease, Merchant, Project, ProjectCost, Receivable, Unit, UnitAdjustmentPlan,
+)
 from .services import classification
 
 MIN_UNITS = 12          # 每个项目至少铺位数（≥10 的要求）
@@ -130,20 +132,63 @@ def generate_for_project(db, p: Project, rng: random.Random) -> int:
     return created
 
 
+def _seed_adjustment_samples(db, p: Project, rng: random.Random) -> int:
+    """给项目造几条业态调改计划示例（空置→新招商 / 在租→置换 / 改造升级）。幂等。"""
+    if db.query(UnitAdjustmentPlan).filter(UnitAdjustmentPlan.project_id == p.id).first():
+        return 0
+    psm, _area, tenants = _cfg(p.project_type)
+    units = db.query(Unit).filter(Unit.project_id == p.id).all()
+    vacant = [u for u in units if u.status == "空置"]
+    rented = [u for u in units if u.status in ("在租", "自营")]
+    made = 0
+
+    def _fmt(i: int) -> str:
+        return tenants[i % len(tenants)][1]
+
+    if vacant:
+        u = vacant[0]
+        db.add(UnitAdjustmentPlan(
+            project_id=p.id, unit_id=u.id, action="新招商", from_format=None,
+            to_format=_fmt(1), expected_rent_psm=round(psm * 1.05, 1),
+            plan_status="审批中", plan_date=date(2026, 12, 31), owner="招商运营部",
+            reason="空置铺位引入目标业态填补"))
+        made += 1
+    if len(rented) >= 1:
+        u = rented[-1]
+        db.add(UnitAdjustmentPlan(
+            project_id=p.id, unit_id=u.id, action="置换", from_format=None,
+            to_format=_fmt(3), expected_rent_psm=round(psm * 1.15, 1),
+            plan_status="草案", plan_date=date(2027, 3, 31), owner="招商运营部",
+            reason="低效商户置换为更高坪效业态"))
+        made += 1
+    if len(rented) >= 2:
+        u = rented[-2]
+        db.add(UnitAdjustmentPlan(
+            project_id=p.id, unit_id=u.id, action="改造", from_format=None,
+            to_format=_fmt(5), expected_rent_psm=round(psm * 1.10, 1),
+            plan_status="已定", plan_date=date(2026, 11, 30), owner="工程部",
+            reason="铺位改造升级，提升租金坪效"))
+        made += 1
+    return made
+
+
 def seed_operation_samples(db) -> dict:
     projects = db.query(Project).filter(Project.is_deleted.is_(False)).all()
     total_units = 0
     touched = 0
+    plans = 0
     for p in projects:
         rng = random.Random(f"ops-{p.project_code}")   # 确定性
         n = generate_for_project(db, p, rng)
         if n:
             touched += 1
             total_units += n
+        db.flush()
+        plans += _seed_adjustment_samples(db, p, rng)
     classification.recompute_all_statuses(db)   # 有活动的项目→已开业
     db.commit()
     return {"projects_touched": touched, "units_created": total_units,
-            "project_total": len(projects)}
+            "adjustment_plans": plans, "project_total": len(projects)}
 
 
 if __name__ == "__main__":

@@ -10,9 +10,9 @@ from . import __version__
 from .config import get_settings
 from .database import Base, engine
 from .routers import (
-    admin, approvals, assessment, auth, brands, candidates, communications, dashboard,
-    dicts, export, geocode, imports, leasing, map as map_router, matches, operations,
-    projects, quality, tasks, units,
+    adjustments, admin, approvals, assessment, auth, brands, candidates, communications,
+    dashboard, dicts, export, geocode, imports, leasing, map as map_router, matches,
+    operations, projects, quality, tasks, units,
 )
 
 settings = get_settings()
@@ -41,5 +41,5 @@ def health():
 for _r in (auth, brands, projects, geocode, map_router, matches, candidates,
            communications, tasks, imports, dicts, approvals, quality,
            dashboard, admin, export,
-           units, leasing, operations, assessment):
+           units, leasing, operations, assessment, adjustments):
     app.include_router(_r.router)

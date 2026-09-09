@@ -11,6 +11,7 @@ from .rbac import Permission, Role, RolePermission, UserRole
 from .system import ApprovalRecord, AuditLog, ImportBatch
 from .leasing import Lease, Merchant, ProjectCost, Receivable, Unit
 from .assessment import MerchantAssessment, UnitBrandMatch
+from .adjustment import UnitAdjustmentPlan
 
 __all__ = [
     "User", "Brand", "BrandExpansion", "Project", "ProjectLocation", "Match",
@@ -21,5 +22,5 @@ __all__ = [
     "Role", "Permission", "UserRole", "RolePermission",
     # 出租经营域
     "Unit", "Merchant", "Lease", "Receivable", "ProjectCost",
-    "UnitBrandMatch", "MerchantAssessment",
+    "UnitBrandMatch", "MerchantAssessment", "UnitAdjustmentPlan",
 ]
