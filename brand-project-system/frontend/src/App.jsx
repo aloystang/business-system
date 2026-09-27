@@ -1,5 +1,7 @@
 import React from 'react'
 import { getOperations, getProjectOperations, getTenantMix, getAdjustmentPlan, resolveProjectIdByName } from './api'
+import ProjectLayoutSandbox from './ProjectLayoutSandbox'
+import ManagementCenter from './ManagementCenter'
 import {
   Activity,
   ArrowRight,
@@ -39,13 +41,14 @@ import {
 } from 'lucide-react'
 
 const nav = [
-  { id: 'dashboard', label: '工作首页', icon: LayoutDashboard },
+  { id: 'dashboard', label: '管理驾驶舱', icon: LayoutDashboard },
   { id: 'map', label: '地图资源中心', icon: Map },
   { id: 'brands', label: '品牌资源库', icon: Database },
   { id: 'projects', label: '项目资源库', icon: Building2 },
   { id: 'operations', label: '经营中心', icon: Activity },
   { id: 'matching', label: '匹配工作台', icon: Target, badge: '12' },
   { id: 'followup', label: '候选与跟进', icon: UsersRound, badge: '5' },
+  { id: 'management', label: '管理中心', icon: ClipboardCheck, badge: '6' },
 ]
 
 const projects = [
@@ -394,17 +397,24 @@ function ProjectTenantMixPanel({ projectName }) {
 }
 
 function ProjectArchive({ project }) {
-  return <>
-    <div className="archiveGrid">
-    <div><span>项目编号</span><strong>XS-PRJ-{String(project.id).padStart(4, '0')}</strong></div><div><span>项目等级</span><strong>{project.grade} 级</strong></div>
-    <div><span>项目类型</span><strong>{project.type}</strong></div><div><span>招商状态</span><strong>{project.status}</strong></div>
-    <div><span>经营面积</span><strong>{project.area}</strong></div><div><span>综合出租率</span><strong>{project.occupancy}</strong></div>
-    <div><span>本月经营收入</span><strong>{project.revenue}</strong></div><div><span>本月经营成本</span><strong>{project.cost}</strong></div>
-    <div><span>租金收缴率</span><strong>{project.collection}</strong></div><div><span>项目负责人</span><strong>{project.owner}</strong></div>
-    <div className="full"><span>项目定位</span><p>运动生活目的地，覆盖赛事消费、家庭客群与周边社区的复合型商业场景。</p></div>
+  const [tab, setTab] = React.useState('overview')
+  return <div className="projectArchive">
+    <div className="projectArchiveTabs" role="tablist" aria-label="项目档案视图">
+      <button type="button" role="tab" aria-selected={tab === 'overview'} onClick={() => setTab('overview')}>概览</button>
+      <button type="button" role="tab" aria-selected={tab === 'tenant'} onClick={() => setTab('tenant')}>业态与调改</button>
+      <button type="button" role="tab" aria-selected={tab === 'sandbox'} onClick={() => setTab('sandbox')}>铺位沙盘</button>
     </div>
-    <ProjectTenantMixPanel projectName={project.name} />
-  </>
+    {tab === 'overview' && <div className="archiveGrid">
+      <div><span>项目编号</span><strong>XS-PRJ-{String(project.id).padStart(4, '0')}</strong></div><div><span>项目等级</span><strong>{project.grade} 级</strong></div>
+      <div><span>项目类型</span><strong>{project.type}</strong></div><div><span>招商状态</span><strong>{project.status}</strong></div>
+      <div><span>经营面积</span><strong>{project.area}</strong></div><div><span>综合出租率</span><strong>{project.occupancy}</strong></div>
+      <div><span>本月经营收入</span><strong>{project.revenue}</strong></div><div><span>本月经营成本</span><strong>{project.cost}</strong></div>
+      <div><span>租金收缴率</span><strong>{project.collection}</strong></div><div><span>项目负责人</span><strong>{project.owner}</strong></div>
+      <div className="full"><span>项目定位</span><p>运动生活目的地，覆盖赛事消费、家庭客群与周边社区的复合型商业场景。</p></div>
+    </div>}
+    {tab === 'tenant' && <ProjectTenantMixPanel projectName={project.name} />}
+    {tab === 'sandbox' && <ProjectLayoutSandbox projectName={project.name} />}
+  </div>
 }
 
 function BrandArchive({ brand }) {
@@ -454,9 +464,21 @@ function DashboardPage({ onNavigate }) {
     brands: { title: '品牌资源明细', subtitle: '品牌资源总数 128', columns: ['品牌名称', '一级业态', '二级业态', '三级业态', '面积需求', '工程条件'], rows: brands.map((item) => [item.name, item.level1, item.level2, item.level3, item.area, item.engineering]), note: '品牌资源按资产方拓店条件统计。' },
     occupancy: { title: '项目出租率明细', subtitle: '综合出租率 86.4%', columns: ['项目名称', '经营面积', '综合出租率', '租金收缴率'], rows: projects.map((item) => [item.name, item.area, item.occupancy, item.collection]), note: '综合出租率按可租赁面积加权计算。' },
     revenue: { title: '项目经营收支明细', subtitle: '本月经营收入 2,486 万元', columns: ['项目名称', '本月收入', '本月成本', '租金收缴率'], rows: projects.map((item) => [item.name, item.revenue, item.cost, item.collection]), note: '当前为界面演示数据，正式版本以经营台账汇总口径为准。' },
+    noi: { title: '经营净收益明细', subtitle: '本月 NOI 1,023 万元', columns: ['项目名称', '经营收入', '经营成本', '经营净收益', '预算达成'], rows: projects.slice(0, 8).map((item, index) => [item.name, item.revenue, item.cost, `${Math.max(18, 82 + index * 13)}万元`, `${94 + (index % 4) * 1.3}%`]), note: '经营净收益为演示口径，正式版本由收入台账扣除可归集经营成本后生成。' },
+    collection: { title: '租金收缴明细', subtitle: '本月综合收缴率 96.4%', columns: ['项目名称', '应收租金', '实收租金', '收缴率', '责任人'], rows: projects.slice(0, 10).map((item, index) => [item.name, `${118 + index * 17}万元`, `${112 + index * 16}万元`, item.collection, item.owner]), note: '点击经营中心可继续查看到租户与账期明细。' },
   }
   const activeDetail = dashboardDetails[detailKey]
   return <div className="pageContent dashboardPage dashboardMapPage">
+    <section className="cockpit-commandBar">
+      <div><span>集团经营快照 · 2026年9月</span><strong>整体经营平稳，3 项偏差需要本周决策</strong><small>演示口径 · 最近更新 14:30</small></div>
+      <div className="cockpit-commandMetrics">
+        <button onClick={() => setDetailKey('revenue')}><span>年度收入达成</span><strong>76.2%</strong><small className="up">同比 +8.4%</small></button>
+        <button onClick={() => setDetailKey('noi')}><span>本月 NOI</span><strong>1,023万</strong><small className="up">预算达成 98.6%</small></button>
+        <button onClick={() => setDetailKey('collection')}><span>租金收缴率</span><strong>96.4%</strong><small>目标 97.0%</small></button>
+        <button onClick={() => onNavigate('management')}><span>管理待办</span><strong>6项</strong><small className="warn">含 1 项红色预警</small></button>
+      </div>
+      <button className="cockpit-manageEntry" onClick={() => onNavigate('management')}>进入管理中心 <ArrowRight size={15} /></button>
+    </section>
     <section className="dashboardOperatingLayout">
       <div className="dashboardMapHero">
         <DemoMap selected={selected} onSelect={setSelected} items={filteredProjects} />
@@ -472,11 +494,15 @@ function DashboardPage({ onNavigate }) {
         </aside>
       </div>
       <div className="dashboardMetricVisuals" aria-label="核心经营指标">
-        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('projects')}><div className="metricVisualHead"><span>项目总数</span><small>全部在管项目</small></div><div className="metricVisualBody"><strong>28<em>个</em></strong><div className="projectBars"><i /><i /><i /><i /></div></div><p>本月新增 2 个项目</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
-        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('brands')}><div className="metricVisualHead"><span>品牌资源</span><small>具备拓店需求</small></div><div className="metricVisualBody"><strong>128<em>个</em></strong><div className="brandStack"><i /><i /><i /></div></div><p>餐饮 42 · 零售 51 · 文体 35</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
+        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('projects')}><div className="metricVisualHead"><span>在管项目</span><small>资产经营管理范围</small></div><div className="metricVisualBody"><strong>28<em>个</em></strong><div className="projectBars"><i /><i /><i /><i /></div></div><p>年度新增 2 个项目</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
+        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('noi')}><div className="metricVisualHead"><span>经营净收益 NOI</span><small>收入扣除经营成本</small></div><div className="metricVisualBody"><strong>1,023<em>万元</em></strong><div className="brandStack"><i /><i /><i /></div></div><p>环比 +4.6% · 预算达成 98.6%</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
         <button type="button" className="metricVisualCard" onClick={() => setDetailKey('occupancy')}><div className="metricVisualHead"><span>综合出租率</span><small>按可租面积加权</small></div><div className="metricVisualBody"><strong>86.4<em>%</em></strong><div className="occupancyRing"><span>86%</span></div></div><p>已出租 26.9 万㎡</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
-        <button type="button" className="metricVisualCard revenueMetric" onClick={() => setDetailKey('revenue')}><div className="metricVisualHead"><span>本月经营收入</span><small>截至 9月5日</small></div><div className="metricVisualBody"><strong>2,486<em>万元</em></strong><svg viewBox="0 0 130 48" aria-label="本月收入走势"><path d="M3 41 C20 39 23 30 38 31 S59 25 72 27 S93 15 104 17 S118 9 127 6" /></svg></div><p>同比 +12.8% · 成本 1,463 万元</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
+        <button type="button" className="metricVisualCard revenueMetric" onClick={() => setDetailKey('collection')}><div className="metricVisualHead"><span>租金收缴率</span><small>截至 9月5日</small></div><div className="metricVisualBody"><strong>96.4<em>%</em></strong><svg viewBox="0 0 130 48" aria-label="租金收缴走势"><path d="M3 41 C20 39 23 30 38 31 S59 25 72 27 S93 15 104 17 S118 9 127 6" /></svg></div><p>距离月度目标还差 0.6 个百分点</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
       </div>
+    </section>
+    <section className="cockpit-decisionGrid">
+      <div className="panel cockpit-focusPanel"><SectionTitle title="本周管理焦点" meta="风险与经营偏差自动汇总" action={<button className="textAction" onClick={() => onNavigate('management')}>查看全部 <ArrowRight size={14} /></button>} /><button onClick={() => onNavigate('management')}><i className="critical" /><span><strong>社区药房退租交接逾期</strong><small>江北嘴网球馆 · 逾期 9 天 · 李然负责</small></span><em>红色预警</em></button><button onClick={() => onNavigate('management')}><i className="warning" /><span><strong>足球场出租率低于月度目标</strong><small>当前 82.6% · 偏差 -5.4pt · 陈昱负责</small></span><em>处置中</em></button><button onClick={() => onNavigate('management')}><i className="warning" /><span><strong>悦荟城两户租金未按期到账</strong><small>未收 18.6 万元 · 预计 9月12日完成</small></span><em>待跟进</em></button></div>
+      <div className="panel cockpit-approvalPanel"><SectionTitle title="待审批与待验收" meta="需要管理者决策的事项" /><button onClick={() => onNavigate('management')}><span><strong>超级猩猩商务条件审批</strong><small>年租金 223.2 万元 · 今天 09:42</small></span><em>待审批</em><ArrowRight size={14} /></button><button onClick={() => onNavigate('management')}><span><strong>悦荟城中庭调改预算追加</strong><small>追加 38 万元 · 昨天 16:18</small></span><em>待审批</em><ArrowRight size={14} /></button><button onClick={() => onNavigate('management')}><span><strong>悦荟城租金收缴提升</strong><small>收缴率已提升至 97.8%</small></span><em>待验收</em><ArrowRight size={14} /></button></div>
     </section>
     {activeDetail && <GlassDialog title={activeDetail.title} subtitle={activeDetail.subtitle} onClose={() => setDetailKey('')} wide actions={<button type="button" className="primaryAction" onClick={() => setDetailKey('')}>关闭</button>}><DataDetailTable columns={activeDetail.columns} rows={activeDetail.rows} note={activeDetail.note} /></GlassDialog>}
   </div>
@@ -654,6 +680,48 @@ function ProjectOperatingDetail({ project, onOpenMetric }) {
   </div>
 }
 
+function OperationMetricVisualDetail({ metric, rows = [] }) {
+  const [selectedIndex, setSelectedIndex] = React.useState(0)
+  const selected = rows[selectedIndex] || []
+  const chartRows = rows.slice(0, 7)
+  const heights = chartRows.map((_, index) => 38 + ((index * 19 + 23) % 58))
+  return <div className="operationMetricDrilldown">
+    <div className="operationMetricHero">
+      <div><span>{metric.label}</span><strong>{metric.value}<em>{metric.unit}</em></strong><small>{metric.meta}</small></div>
+      <div className="operationMetricTrend" role="img" aria-label={`${metric.label}近六期趋势`}>
+        {['4月', '5月', '6月', '7月', '8月', '9月'].map((month, index) => <i key={month} style={{ height: `${42 + ((index * 13 + metric.label.length * 3) % 52)}%` }} title={month}><b>{month}</b></i>)}
+      </div>
+    </div>
+    <div className="operationMetricBreakdown">
+      <section><header><strong>构成与分布</strong><span>点击柱形或数据项继续查看</span></header><div className="operationBreakdownBars">{chartRows.map((row, index) => <button type="button" className={selectedIndex === index ? 'active' : ''} key={`${row[0]}-${index}`} onClick={() => setSelectedIndex(index)}><span><i style={{ height: `${heights[index]}%` }} /></span><small>{String(row[0]).slice(0, 7)}</small></button>)}</div></section>
+      <section className="operationBreakdownList"><header><strong>具体数据</strong><span>{rows.length} 项</span></header>{rows.map((row, index) => <button type="button" className={selectedIndex === index ? 'active' : ''} key={`${row[0]}-${index}`} onClick={() => setSelectedIndex(index)}><i className={`drillDot d${index % 4}`} /><span><strong>{row[0]}</strong><small>{row.slice(1).join(' · ')}</small></span><ArrowRight size={13} /></button>)}</section>
+    </div>
+    {selected.length > 0 && <div className="operationRecordDetail"><div><span>当前查看</span><strong>{selected[0]}</strong></div>{selected.slice(1).map((value, index) => <div key={`${value}-${index}`}><span>{index === 0 ? '指标值' : index === 1 ? '占比/状态' : `关联信息 ${index}`}</span><strong>{value}</strong></div>)}<div><span>数据口径</span><strong>{metric.label}统计口径 · {metric.meta}</strong></div></div>}
+  </div>
+}
+
+function ProjectContractLedger({ rows, onOpen }) {
+  const groups = React.useMemo(() => Object.entries(rows.reduce((result, row) => {
+    if (!result[row.project]) result[row.project] = []
+    result[row.project].push(row)
+    return result
+  }, {})), [rows])
+  const [expanded, setExpanded] = React.useState(() => new Set(groups.map(([name]) => name)))
+  const toggle = (name) => setExpanded((current) => {
+    const next = new Set(current)
+    next.has(name) ? next.delete(name) : next.add(name)
+    return next
+  })
+  return <div className="projectContractLedger">{groups.map(([project, contracts]) => {
+    const isOpen = expanded.has(project)
+    const attention = contracts.filter((row) => row.status !== '履约中').length
+    return <section key={project} className="contractProjectGroup">
+      <button type="button" className="contractProjectHead" aria-expanded={isOpen} onClick={() => toggle(project)}><span><Building2 size={18} /><span><strong>{project}</strong><small>{contracts.length} 份合同 · {attention ? `${attention} 份需要关注` : '履约正常'}</small></span></span><span><em>合同租金 {contracts.reduce((sum, row) => sum + Number(row.monthly || 0), 0).toFixed(1)} 万元/月</em><ChevronDown size={16} /></span></button>
+      {isOpen && <div className="contractGroupTable"><div className="operationTableHeader"><span>合同编号</span><span>租户/品牌</span><span>铺位</span><span>租赁面积</span><span>租金标准</span><span>合同期限</span><span>状态</span></div>{contracts.map((row) => <button type="button" key={row.no} onClick={() => onOpen(row)}><strong>{row.no}</strong><span>{row.tenant}</span><span>{row.unit}</span><span>{row.area}</span><span>{row.rent}</span><span>{row.term}</span><span className={row.status === '履约中' ? 'incomeText' : 'warningText'}>{row.status}</span></button>)}</div>}
+    </section>
+  })}</div>
+}
+
 function OperationsPage({ notify }) {
   const [tab, setTab] = React.useState('overview')
   const [projectId, setProjectId] = React.useState('all')
@@ -725,10 +793,18 @@ function OperationsPage({ notify }) {
     { project: '三洞桥 PARK', tenant: '名创优品', period: '2026年9月', receivable: '32.8万元', received: '30.1万元', unpaid: '2.7万元', status: '待补缴' },
   ]
   const contractRows = [
-    { no: 'XS-HT-2026-018', project: '重庆龙兴足球场', tenant: '超级猩猩', area: '520㎡', rent: '165元/㎡/月', term: '2026.01–2031.12', status: '履约中' },
-    { no: 'XS-HT-2026-021', project: '两江悦荟城', tenant: '迪卡侬', area: '1800㎡', rent: '138元/㎡/月', term: '2026.03–2032.02', status: '履约中' },
-    { no: 'XS-HT-2025-046', project: '两江云中街', tenant: '瑞幸咖啡', area: '96㎡', rent: '285元/㎡/月', term: '2025.10–2028.09', status: '履约中' },
-    { no: 'XS-HT-2024-033', project: '鱼复星光', tenant: '孩子王', area: '860㎡', rent: '112元/㎡/月', term: '2024.11–2027.10', status: '临期关注' },
+    { no: 'XS-HT-2026-018', project: '重庆龙兴足球场', tenant: '超级猩猩', unit: 'L1-101/102', area: '520㎡', rent: '165元/㎡/月', monthly: 8.6, term: '2026.01–2031.12', status: '履约中' },
+    { no: 'XS-HT-2026-019', project: '重庆龙兴足球场', tenant: '瑞幸咖啡', unit: 'L1-106', area: '96㎡', rent: '285元/㎡/月', monthly: 2.7, term: '2026.02–2029.01', status: '履约中' },
+    { no: 'XS-HT-2025-088', project: '重庆龙兴足球场', tenant: '滔搏运动', unit: 'L2-201/202', area: '680㎡', rent: '142元/㎡/月', monthly: 9.7, term: '2025.10–2030.09', status: '履约中' },
+    { no: 'XS-HT-2024-061', project: '重庆龙兴足球场', tenant: '运动康复中心', unit: 'L2-208', area: '310㎡', rent: '118元/㎡/月', monthly: 3.7, term: '2024.12–2026.11', status: '临期关注' },
+    { no: 'XS-HT-2026-021', project: '两江悦荟城', tenant: '迪卡侬', unit: 'L1-001', area: '1800㎡', rent: '138元/㎡/月', monthly: 24.8, term: '2026.03–2032.02', status: '履约中' },
+    { no: 'XS-HT-2025-036', project: '两江悦荟城', tenant: '海底捞', unit: 'L3-301', area: '920㎡', rent: '126元/㎡/月', monthly: 11.6, term: '2025.05–2030.04', status: '履约中' },
+    { no: 'XS-HT-2024-029', project: '两江悦荟城', tenant: '孩子王', unit: 'L2-206', area: '860㎡', rent: '112元/㎡/月', monthly: 9.6, term: '2024.11–2027.10', status: '履约中' },
+    { no: 'XS-HT-2025-046', project: '两江云中街', tenant: '瑞幸咖啡', unit: 'A1-08', area: '96㎡', rent: '285元/㎡/月', monthly: 2.7, term: '2025.10–2028.09', status: '履约中' },
+    { no: 'XS-HT-2024-033', project: '两江云中街', tenant: '名创优品', unit: 'B2-11/12', area: '420㎡', rent: '156元/㎡/月', monthly: 6.6, term: '2024.11–2026.10', status: '临期关注' },
+    { no: 'XS-HT-2026-052', project: '两江云中街', tenant: '百果园', unit: 'A1-15', area: '128㎡', rent: '192元/㎡/月', monthly: 2.5, term: '2026.06–2029.05', status: '履约中' },
+    { no: 'XS-HT-2024-078', project: '江北嘴网球馆', tenant: '社区药房', unit: 'L1-103', area: '180㎡', rent: '145元/㎡/月', monthly: 2.6, term: '2024.09–2026.08', status: '已到期待交接' },
+    { no: 'XS-HT-2025-014', project: '江北嘴网球馆', tenant: '美宜佳', unit: 'L1-105', area: '116㎡', rent: '176元/㎡/月', monthly: 2.0, term: '2025.02–2028.01', status: '履约中' },
   ]
   const openProject = (project) => setDetail({ type: 'project', title: project.name, subtitle: '项目经营数据', project })
   const openRow = (title, subtitle, rows) => setDetail({ type: 'table', title, subtitle, rows })
@@ -814,10 +890,22 @@ function OperationsPage({ notify }) {
       { label: '有效合同', value: '186', unit: '份', meta: '覆盖 28 个项目' }, { label: '本月新签', value: '11', unit: '份', meta: '新签面积 0.8 万㎡', tone: 'income' }, { label: '年内到期', value: '12', unit: '份', meta: '涉及租金 318 万元' }, { label: '临期关注', value: '4', unit: '份', meta: '90 天内需处理', tone: 'cost' }, { label: '平均剩余租期', value: '3.6', unit: '年', meta: '合同组合稳定' },
     ],
   }
-  const openKpi = (kpi) => setDetail({ type: 'table', title: kpi.label, subtitle: `${formatOperationPeriod(period)} · ${selectedProject?.name || '全部项目'}`, columns: kpi.rows?.[0]?.length === 3 ? ['构成项目', '金额/规模', '占比'] : ['数据项', '内容'], rows: kpi.rows || [[kpi.label, `${kpi.value}${kpi.unit}`], ['统计说明', kpi.meta]] })
+  const rowsForKpi = (kpi) => {
+    if (kpi.rows?.length) return kpi.rows
+    if (tab === 'contracts') {
+      const grouped = Object.entries(contractRows.reduce((result, row) => { result[row.project] = (result[row.project] || 0) + 1; return result }, {}))
+      if (kpi.label === '有效合同') return grouped.map(([name, count]) => [name, `${count}份`, `${contractRows.filter((row) => row.project === name && row.status === '履约中').length}份履约正常`])
+      if (kpi.label === '本月新签') return contractRows.slice(0, 5).map((row) => [row.tenant, row.project, row.no])
+      if (kpi.label === '年内到期' || kpi.label === '临期关注') return contractRows.filter((row) => row.status !== '履约中').map((row) => [row.tenant, row.project, `${row.term} · ${row.status}`])
+      return grouped.map(([name, count], index) => [name, `${(3.1 + index * .4).toFixed(1)}年`, `${count}份合同`])
+    }
+    if (tab === 'rent') return rentRows.map((row) => [row.tenant, row.project, `${row.received} / 应收${row.receivable}`])
+    return projects.slice(0, 8).map((project, index) => [project.name, kpi.unit === '%' ? project.occupancy : project.area, index === 3 ? '重点关注' : '正常'])
+  }
+  const openKpi = (kpi) => setDetail({ type: 'visual', title: kpi.label, subtitle: `${formatOperationPeriod(period)} · ${selectedProject?.name || '全部项目'}`, metric: kpi, rows: rowsForKpi(kpi) })
   const openProjectMetric = (project, metric) => {
-    if (metric === 'cost') return setDetail({ type: 'table', title: `${project.name}成本明细`, subtitle: `${formatOperationPeriod(period)} · 本月成本 ${project.cost}`, columns: ['成本科目', '金额', '占比'], rows: project.costRows?.length ? project.costRows : projectCostBreakdown(project) })
-    setDetail({ type: 'table', title: `${project.name}收入构成`, subtitle: `${formatOperationPeriod(period)} · 本月收入 ${project.revenue}`, columns: ['收入科目', '金额', '占比'], rows: project.incomeRows?.length ? project.incomeRows : [['租金收入', project.revenue, '62%'], ['运营服务', '示例 22%', '22%'], ['场地及活动', '示例 11%', '11%'], ['其他收入', '示例 5%', '5%']] })
+    if (metric === 'cost') return setDetail({ type: 'visual', title: `${project.name}成本明细`, subtitle: `${formatOperationPeriod(period)} · 本月成本 ${project.cost}`, metric: { label: '本月经营成本', value: project.cost.replace('万元', ''), unit: '万元', meta: '按成本科目统计' }, rows: project.costRows?.length ? project.costRows : projectCostBreakdown(project) })
+    setDetail({ type: 'visual', title: `${project.name}收入构成`, subtitle: `${formatOperationPeriod(period)} · 本月收入 ${project.revenue}`, metric: { label: '本月经营收入', value: project.revenue.replace('万元', ''), unit: '万元', meta: '按收入科目统计' }, rows: project.incomeRows?.length ? project.incomeRows : [['租金收入', project.revenue, '62%'], ['运营服务', '示例 22%', '22%'], ['场地及活动', '示例 11%', '11%'], ['其他收入', '示例 5%', '5%']] })
   }
   return <div className="pageContent operationsPage">
     <div className="operationToolbar">
@@ -833,7 +921,7 @@ function OperationsPage({ notify }) {
     {tab === 'overview' && <>
       <div className="operationOverviewGrid">
         <MonthlyOperationHistory rows={historyRows} loading={historyLoading} title={`${selectedProject?.name || '全部项目'}月度经营趋势`} meta={`截至 ${formatOperationPeriod(period)} · 最近 12 个月`} />
-        <section className="panel incomeStructure"><SectionTitle title="本月收入结构" meta="按收入类型统计" /><div className="incomeRing"><div><strong>{incomeSummary.total}</strong><span>万元</span></div></div><div className="incomeItems">{incomeSummary.items.map((item, index) => <div key={item.name}><i className={`r${index + 1}`} /><span>{item.name}</span><strong>{item.value} · {item.share}%</strong></div>)}</div></section>
+        <section className="panel incomeStructure"><SectionTitle title="本月收入结构" meta="按收入类型统计" /><div className="incomeStructureVisual"><div className="incomeRing"><div><strong>{incomeSummary.total}</strong><span>万元</span></div></div><div className="incomeItems">{incomeSummary.items.map((item, index) => <button type="button" key={item.name} onClick={() => openKpi({ label: item.name, value: item.value.replace('万', ''), unit: '万元', meta: `占本月收入 ${item.share}%`, rows: projects.slice(0, 7).map((project, projectIndex) => [project.name, `${Math.max(1, Math.round((item.share * (8 - projectIndex)) / 9))}万元`, projectIndex < 2 ? '主要贡献项目' : '正常']) })}><i className={`r${index + 1}`} /><span>{item.name}</span><strong>{item.value} · {item.share}%</strong><b><em style={{ width: `${item.share}%` }} /></b></button>)}</div></div></section>
       </div>
       <section className="panel operationTablePanel"><SectionTitle title="项目经营概览" meta={liveRows ? `实时 · ${liveRows.length} 个项目（按 NOI 排序）· 点击项目查看经营档案` : '点击项目查看经营档案'} /><div className="operationDataTable"><div className="operationTableHeader"><span>项目名称</span><span>出租率</span><span>实收收入</span><span>经营成本</span><span>净收益 NOI</span><span>收缴率</span><span>欠租</span></div>{liveRows ? liveRows.map((r) => <button type="button" aria-label={`查看${r.project_name}经营档案`} key={r.project_id} onClick={() => openLiveProject(r)}><strong>{r.project_name}</strong><span>{pct(r.occupancy_rate)}</span><span className="incomeText">{wan(r.revenue_received)}</span><span className="costText">{wan(r.cost)}</span><span className="incomeText">{wan(r.noi)}</span><span>{pct(r.collect_rate)}</span><span className={r.arrears > 0 ? 'warningText' : ''}>{wan(r.arrears)}</span></button>) : projects.map((project) => <button type="button" key={project.id} onClick={() => openProject(project)}><strong>{project.name}</strong><span>{project.occupancy}</span><span className="incomeText">{project.revenue}</span><span className="costText">{project.cost}</span><span>—</span><span>{project.collection}</span><span>—</span></button>)}</div></section>
     </>}
@@ -842,9 +930,10 @@ function OperationsPage({ notify }) {
 
     {tab === 'rent' && <section className="panel operationTablePanel ledgerPanel"><SectionTitle title="租金收缴台账" meta="2026年9月 · 点击记录查看明细" action={<button type="button" className="textAction" onClick={() => notify('租金台账已刷新')}>刷新台账</button>} /><div className="operationDataTable rentTable"><div className="operationTableHeader"><span>项目</span><span>租户/品牌</span><span>账期</span><span>应收金额</span><span>实收金额</span><span>未收金额</span><span>状态</span></div>{rentRows.map((row) => <button type="button" key={`${row.project}-${row.tenant}`} onClick={() => openRow(`${row.tenant}租金明细`, row.project, [['账期', row.period], ['应收金额', row.receivable], ['实收金额', row.received], ['未收金额', row.unpaid], ['收缴状态', row.status]])}><strong>{row.project}</strong><span>{row.tenant}</span><span>{row.period}</span><span>{row.receivable}</span><span className="incomeText">{row.received}</span><span className={row.unpaid !== '0' ? 'warningText' : ''}>{row.unpaid}</span><span>{row.status}</span></button>)}</div></section>}
 
-    {tab === 'contracts' && <section className="panel operationTablePanel ledgerPanel"><SectionTitle title="经营合同台账" meta="有效合同 186 份 · 12 份年内到期" /><div className="operationDataTable contractTable"><div className="operationTableHeader"><span>合同编号</span><span>项目</span><span>租户/品牌</span><span>租赁面积</span><span>租金标准</span><span>合同期限</span><span>状态</span></div>{contractRows.map((row) => <button type="button" key={row.no} onClick={() => openRow(row.no, `${row.project} · ${row.tenant}`, [['租赁面积', row.area], ['租金标准', row.rent], ['合同期限', row.term], ['履约状态', row.status]])}><strong>{row.no}</strong><span>{row.project}</span><span>{row.tenant}</span><span>{row.area}</span><span>{row.rent}</span><span>{row.term}</span><span className={row.status === '临期关注' ? 'warningText' : ''}>{row.status}</span></button>)}</div></section>}
+    {tab === 'contracts' && <section className="panel operationTablePanel ledgerPanel"><SectionTitle title="经营合同台账" meta="按项目归集 · 展开项目查看全部合同" /><ProjectContractLedger rows={selectedProject ? contractRows.filter((row) => row.project === selectedProject.name) : contractRows} onOpen={(row) => openRow(row.no, `${row.project} · ${row.tenant}`, [['所属铺位', row.unit], ['租赁面积', row.area], ['月租金', `${row.monthly}万元`], ['租金标准', row.rent], ['合同期限', row.term], ['履约状态', row.status]])} /></section>}
 
     {detail?.type === 'project' && <GlassDialog title={detail.title} subtitle={detail.subtitle} onClose={() => setDetail(null)} wide actions={<button type="button" className="primaryAction" onClick={() => setDetail(null)}>关闭</button>}><ProjectOperatingDetail project={detail.project} onOpenMetric={(metric) => openProjectMetric(detail.project, metric)} /></GlassDialog>}
+    {detail?.type === 'visual' && <GlassDialog title={detail.title} subtitle={detail.subtitle} onClose={() => setDetail(null)} wide actions={<button type="button" className="primaryAction" onClick={() => setDetail(null)}>关闭</button>}><OperationMetricVisualDetail metric={detail.metric} rows={detail.rows} /></GlassDialog>}
     {detail?.type === 'table' && <GlassDialog title={detail.title} subtitle={detail.subtitle} onClose={() => setDetail(null)} wide={detail.columns?.length > 2} actions={<button type="button" className="primaryAction" onClick={() => setDetail(null)}>关闭</button>}><DataDetailTable columns={detail.columns || ['数据项', '内容']} rows={detail.rows} /></GlassDialog>}
   </div>
 }
@@ -922,36 +1011,52 @@ function FollowupPage({ notify }) {
 function ImportPage({ notify }) {
   const inputRef = React.useRef(null)
   const [file, setFile] = React.useState(null)
+  const [dataType, setDataType] = React.useState('brand')
   const [showAll, setShowAll] = React.useState(false)
   const [selectedBatch, setSelectedBatch] = React.useState(null)
+  const importTypes = [
+    { id: 'brand', label: '品牌数据', icon: Database, description: '品牌档案、业态、拓店需求与工程条件', fields: '品牌名称,一级业态,二级业态,三级业态,合作意愿,面积下限㎡,面积上限㎡,上下水,排烟,电量kW,计划开店时间', sample: '瑞幸咖啡,餐饮,咖啡茶饮,咖啡店,强,40,120,需要,不需要,60,2026Q4' },
+    { id: 'project', label: '项目数据', icon: Building2, description: '项目档案、定位、体量和负责人信息', fields: '项目名称,项目类型,所在城市,经营面积㎡,项目状态,项目等级,负责人', sample: '重庆龙兴足球场,体育场馆商业,重庆市,161000,招商中,A,陈昱' },
+    { id: 'unit', label: '铺位数据', icon: MapPin, description: '楼层铺位、面积、工程条件和当前状态', fields: '项目名称,铺位编码,楼层,计租面积㎡,状态,当前业态,租户名称,月租金,租约到期日', sample: '重庆龙兴足球场,L1-101,L1,86,在租,咖啡茶饮,瑞幸咖啡,27360,2029-01-31' },
+    { id: 'operations', label: '经营数据', icon: Activity, description: '月度收入、成本、出租率和租金收缴', fields: '项目名称,统计月份,收入科目,收入金额,成本科目,成本金额,应收租金,实收租金,出租率', sample: '重庆龙兴足球场,2026-09,租金收入,693300,能源费用,39700,718000,693300,82.6%' },
+    { id: 'contract', label: '合同数据', icon: ClipboardCheck, description: '租赁合同、期限、租金标准与履约状态', fields: '合同编号,项目名称,铺位编码,租户名称,开始日期,结束日期,租金标准元每㎡每月,保证金,履约状态', sample: 'XS-HT-2026-018,重庆龙兴足球场,L1-101,超级猩猩,2026-01-01,2031-12-31,165,516000,履约中' },
+  ]
+  const selectedType = importTypes.find((item) => item.id === dataType) || importTypes[0]
   const acceptFile = (nextFile) => {
     if (!nextFile) return
     if (!/\.(xlsx?|csv)$/i.test(nextFile.name)) return notify('仅支持 .xlsx、.xls 或 .csv 文件')
     if (nextFile.size > 20 * 1024 * 1024) return notify('文件超过 20MB，请压缩或拆分后重试')
     setFile(nextFile)
-    notify(`已选择 ${nextFile.name}，正在执行 dry-run 校验`)
+    notify(`已选择${selectedType.label}文件 ${nextFile.name}，正在执行 dry-run 校验`)
   }
   const downloadTemplate = () => {
-    const csv = '\uFEFF数据类型,名称,业务编号,状态,负责人\n品牌,示例品牌,XS-BRD-0001,有效,陈昱\n项目,示例项目,XS-PRJ-0001,招商中,李然\n'
+    const csv = `\uFEFF${selectedType.fields}\n${selectedType.sample}\n`
     const link = document.createElement('a')
     link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }))
-    link.download = '品牌项目导入模板_v1.0.csv'
+    link.download = `${selectedType.label}导入模板_v1.0.csv`
     link.click()
     URL.revokeObjectURL(link.href)
-    notify('v1.0 导入模板已开始下载')
+    notify(`${selectedType.label} v1.0 模板已开始下载`)
   }
   const batches = [
-    { name: '品牌项目资料_0904.xlsx', meta: '128 条 · 成功导入', time: '昨天 18:42', success: true, operator: '唐好', created: 42, updated: 86, rejected: 0 },
-    { name: '项目补充资料_0902.xlsx', meta: '36 条 · 3 条待修正', time: '9月2日', success: false, operator: '赵青', created: 0, updated: 33, rejected: 3 },
-    { name: '品牌拓展计划_0828.xlsx', meta: '54 条 · 成功导入', time: '8月28日', success: true, operator: '李然', created: 12, updated: 42, rejected: 0 },
-    { name: '历史品牌清单_0820.xlsx', meta: '302 条 · 成功导入', time: '8月20日', success: true, operator: '陈昱', created: 302, updated: 0, rejected: 0 },
+    { name: '品牌拓店需求_0904.xlsx', type: '品牌数据', meta: '128 条 · 成功导入', time: '昨天 18:42', success: true, operator: '唐好', created: 42, updated: 86, rejected: 0 },
+    { name: '项目基础资料_0902.xlsx', type: '项目数据', meta: '36 条 · 3 条待修正', time: '9月2日', success: false, operator: '赵青', created: 0, updated: 33, rejected: 3 },
+    { name: '铺位及租约_0828.xlsx', type: '铺位数据', meta: '254 条 · 成功导入', time: '8月28日', success: true, operator: '李然', created: 12, updated: 242, rejected: 0 },
+    { name: '八月经营月报_0820.xlsx', type: '经营数据', meta: '302 条 · 成功导入', time: '8月20日', success: true, operator: '陈昱', created: 302, updated: 0, rejected: 0 },
   ]
-  return <div className="pageContent importPage"><section className="importIntro"><p>上传模板后先执行版本、字段、枚举、重复与关联检查。确认预览无误后再事务导入。</p><button type="button" onClick={downloadTemplate}><Download size={16} />下载 v1.0 模板</button></section><div className="importSteps">{['上传文件', '校验数据', '预览变更', '确认导入'].map((s, i) => <div className={i <= (file ? 1 : 0) ? 'active' : ''} key={s}><i>{i + 1}</i><span>{s}</span>{i < 3 && <ArrowRight size={16} />}</div>)}</div><section className="uploadPanel panel" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); acceptFile(event.dataTransfer.files[0]) }}><input ref={inputRef} className="srOnly" type="file" accept=".xlsx,.xls,.csv" onChange={(event) => acceptFile(event.target.files[0])} /><div className="uploadIcon">{file ? <FileSpreadsheet size={34} /> : <UploadCloud size={34} />}</div><h2>{file ? file.name : '拖放 Excel 文件到此处'}</h2><p>{file ? '文件已接收，dry-run 校验准备就绪' : '支持当前模板版本 v1.0，单个文件不超过 20MB'}</p><button type="button" className="primaryAction" onClick={() => inputRef.current?.click()}><FileUp size={16} />{file ? '重新选择文件' : '选择文件'}</button><small>默认仅执行 dry-run，不会直接写入数据库</small></section><div className="importBottom"><section className="panel"><SectionTitle title="校验内容" meta={file ? '文件已进入校验队列' : '提交前自动完成'} /><div className="checkGrid"><div><BadgeCheck /><strong>模板版本</strong><span>识别并校验版本号</span></div><div><ClipboardCheck /><strong>字段与枚举</strong><span>必填、格式和字典值</span></div><div><Search /><strong>重复与关联</strong><span>业务键及跨表引用</span></div><div><ShieldCheck /><strong>事务完整性</strong><span>失败不留下残缺数据</span></div></div></section><section className="panel"><SectionTitle title="最近导入批次" meta="近 30 天" action={<button type="button" className="textAction" onClick={() => setShowAll(!showAll)}>{showAll ? '收起' : '查看全部'}</button>} /><div className="batchList">{batches.slice(0, showAll ? batches.length : 2).map((batch) => <button type="button" key={batch.name} onClick={() => setSelectedBatch(batch)}><i className={batch.success ? 'successIcon' : 'warningIcon'}>{batch.success ? <CheckCircle2 /> : <Info />}</i><span><strong>{batch.name}</strong><small>{batch.meta}</small></span><time>{batch.time}</time><ArrowRight size={14} /></button>)}</div></section></div>{selectedBatch && <GlassDialog title={selectedBatch.name} subtitle="导入批次明细" onClose={() => setSelectedBatch(null)} actions={<button type="button" className="primaryAction" onClick={() => setSelectedBatch(null)}>关闭</button>}><DataDetailTable columns={['处理项', '结果']} rows={[["批次状态", selectedBatch.success ? '导入成功' : '存在待修正数据'], ['操作人', selectedBatch.operator], ['处理时间', selectedBatch.time], ['新增记录', `${selectedBatch.created} 条`], ['更新记录', `${selectedBatch.updated} 条`], ['未导入记录', `${selectedBatch.rejected} 条`]]} note={selectedBatch.success ? '该批次已通过字段、枚举、重复与关联校验。' : '未导入记录保留在校验结果中，修正后可重新上传。'} /></GlassDialog>}</div>
+  return <div className="pageContent importPage">
+    <section className="importIntro"><div><strong>分类数据导入</strong><p>先选择数据类型，下载对应模板后再上传，系统会按该类数据的字段规则进行校验。</p></div><button type="button" onClick={downloadTemplate}><Download size={16} />下载{selectedType.label}模板</button></section>
+    <section className="importTypeGrid" aria-label="选择导入数据类型">{importTypes.map(({ id, label, icon: Icon, description }) => <button type="button" className={dataType === id ? 'active' : ''} key={id} onClick={() => { setDataType(id); setFile(null) }}><Icon size={20} /><span><strong>{label}</strong><small>{description}</small></span>{dataType === id && <CheckCircle2 size={16} />}</button>)}</section>
+    <div className="importSteps">{['选择数据类型', '上传并校验', '预览变更', '确认导入'].map((s, i) => <div className={i <= (file ? 1 : 0) ? 'active' : ''} key={s}><i>{i + 1}</i><span>{s}</span>{i < 3 && <ArrowRight size={16} />}</div>)}</div>
+    <section className="uploadPanel panel typedUploadPanel" onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); acceptFile(event.dataTransfer.files[0]) }}><input ref={inputRef} className="srOnly" type="file" accept=".xlsx,.xls,.csv" onChange={(event) => acceptFile(event.target.files[0])} /><div className="uploadTypeBadge"><selectedType.icon size={17} />当前导入：{selectedType.label}</div><div className="uploadIcon">{file ? <FileSpreadsheet size={34} /> : <UploadCloud size={34} />}</div><h2>{file ? file.name : `拖放${selectedType.label}文件到此处`}</h2><p>{file ? '文件已接收，正按所选数据类型执行 dry-run 校验' : selectedType.description}</p><div className="uploadActions"><button type="button" onClick={downloadTemplate}><Download size={15} />下载模板</button><button type="button" className="primaryAction" onClick={() => inputRef.current?.click()}><FileUp size={16} />{file ? '重新选择文件' : '选择文件'}</button></div><small>模板与数据类型必须一致；默认校验不会直接写入数据库</small></section>
+    <div className="importBottom"><section className="panel"><SectionTitle title={`${selectedType.label}校验规则`} meta={file ? '文件已进入校验队列' : '提交前自动完成'} /><div className="checkGrid"><div><BadgeCheck /><strong>模板版本</strong><span>必须使用{selectedType.label}当前版本</span></div><div><ClipboardCheck /><strong>专属字段</strong><span>校验该类数据的必填与枚举</span></div><div><Search /><strong>关联关系</strong><span>校验项目、铺位与业务编号</span></div><div><ShieldCheck /><strong>事务完整性</strong><span>失败不留下残缺数据</span></div></div></section><section className="panel"><SectionTitle title="最近导入批次" meta="按数据类型保留记录" action={<button type="button" className="textAction" onClick={() => setShowAll(!showAll)}>{showAll ? '收起' : '查看全部'}</button>} /><div className="batchList">{batches.slice(0, showAll ? batches.length : 2).map((batch) => <button type="button" key={batch.name} onClick={() => setSelectedBatch(batch)}><i className={batch.success ? 'successIcon' : 'warningIcon'}>{batch.success ? <CheckCircle2 /> : <Info />}</i><span><strong>{batch.name}</strong><small>{batch.type} · {batch.meta}</small></span><time>{batch.time}</time><ArrowRight size={14} /></button>)}</div></section></div>
+    {selectedBatch && <GlassDialog title={selectedBatch.name} subtitle={`${selectedBatch.type} · 导入批次明细`} onClose={() => setSelectedBatch(null)} actions={<button type="button" className="primaryAction" onClick={() => setSelectedBatch(null)}>关闭</button>}><DataDetailTable columns={['处理项', '结果']} rows={[["数据类型", selectedBatch.type], ["批次状态", selectedBatch.success ? '导入成功' : '存在待修正数据'], ['操作人', selectedBatch.operator], ['处理时间', selectedBatch.time], ['新增记录', `${selectedBatch.created} 条`], ['更新记录', `${selectedBatch.updated} 条`], ['未导入记录', `${selectedBatch.rejected} 条`]]} note={selectedBatch.success ? '该批次已通过专属字段、枚举、重复与关联校验。' : '未导入记录保留在校验结果中，修正后可重新上传。'} /></GlassDialog>}
+  </div>
 }
 
 function SettingsPage({ notify }) {
-  const [tab, setTab] = React.useState('matching')
-  const [weights, setWeights] = React.useState([['业态匹配', 20], ['城市及区域', 15], ['项目类型', 10], ['定位与客群', 15], ['物业条件', 20], ['商务条件', 10], ['品牌拓展计划', 5], ['双方合作意愿', 5]])
+  const [tab, setTab] = React.useState('users')
+  const [weights, setWeights] = React.useState([['业态适配', 20], ['面积适配', 15], ['层高承重', 10], ['给排水', 10], ['排烟燃气电力', 15], ['楼层临街', 10], ['商务条件', 10], ['拓店与合作意愿', 10]])
   const [historyOpen, setHistoryOpen] = React.useState(false)
   const [saveOpen, setSaveOpen] = React.useState(false)
   const [versionNote, setVersionNote] = React.useState('')
@@ -966,7 +1071,7 @@ function SettingsPage({ notify }) {
     { name: '王明', account: 'wangming', department: '外部协作', role: '只读用户', status: '已停用', mfa: '—', lastLogin: '8月21日 16:20' },
   ])
   const tabs = [
-    ['matching', '匹配规则', Target], ['scoring', '评分规则', Activity], ['dictionary', '分类与字典', Database], ['users', '用户与权限', UsersRound], ['logs', '操作日志', History],
+    ['users', '用户与权限', UsersRound], ['matching', '匹配规则', Target], ['scoring', '评分规则', Activity], ['dictionary', '分类与字典', Database], ['logs', '操作日志', History],
   ]
   const activeTab = tabs.find(([id]) => id === tab)
   const ActiveIcon = activeTab[2]
@@ -988,7 +1093,7 @@ function SettingsPage({ notify }) {
     <section className="panel userTablePanel"><SectionTitle title="管理人员与权限" meta="点击人员查看账户详情" /><div className="userTable"><div className="userTableHeader"><span>姓名/账户</span><span>所属部门</span><span>系统角色</span><span>账户状态</span><span>多因素认证</span><span>最近登录</span><span>操作</span></div>{userList.map((user) => <div className="userTableRow" key={user.account}><div><strong>{user.name}</strong><small>{user.account}</small></div><span>{user.department}</span><span>{user.role}</span><span className={`accountStatus ${user.status === '已停用' ? 'disabled' : ''}`}>{user.status}</span><span className={user.mfa.includes('启用') ? 'safeText' : 'warningText'}>{user.mfa}</span><span>{user.lastLogin}</span><button type="button" onClick={() => setSelectedUser(user)}>管理 <ArrowRight size={13} /></button></div>)}</div></section>
     <section className="panel securityPolicyPanel"><SectionTitle title="账户安全策略" meta="适用于全部管理账户" /><div className="securityPolicyGrid"><div><ShieldCheck size={20} /><span><strong>多因素认证</strong><small>超级管理员与业务管理员强制启用</small></span><em>已开启</em></div><div><Clock3 size={20} /><span><strong>登录会话</strong><small>连续 30 分钟无操作自动退出</small></span><em>30 分钟</em></div><div><ShieldCheck size={20} /><span><strong>异常登录保护</strong><small>连续 5 次失败后锁定并通知管理员</small></span><em>已开启</em></div><div><History size={20} /><span><strong>操作审计</strong><small>权限、导入及数据修改保留审计记录</small></span><em>180 天</em></div></div></section>
   </section>
-  return <div className="pageContent settingsPage"><div className="settingsNav panel">{tabs.map(([id, label, Icon]) => <button type="button" className={tab === id ? 'active' : ''} onClick={() => setTab(id)} key={id}><Icon />{label}</button>)}</div>{tab === 'matching' ? <section className="panel rulePanel"><SectionTitle title="匹配规则 v1.0" meta="当前生效版本 · 2026年9月4日启用" action={<div className="ruleActions"><button type="button" onClick={() => setHistoryOpen(true)}>查看历史版本</button><button className="primaryAction" type="button" disabled={total !== 100} onClick={() => setSaveOpen(true)}><Save size={16} />另存新版本</button></div>} /><div className="ruleSection"><h3>八维权重</h3><p>所有权重合计必须为 100%。调整后需要另存版本，历史结果不会被重算覆盖。</p><div className="weightGrid">{weights.map(([name, value], index) => <label key={name}><span>{name}</span><div><input type="number" min="0" max="100" value={value} onChange={(event) => setWeights((items) => items.map((item, itemIndex) => itemIndex === index ? [item[0], event.target.value] : item))} /><em>%</em></div></label>)}</div><div className={`weightTotal ${total !== 100 ? 'invalid' : ''}`}><span>权重合计</span><strong>{total}%</strong>{total !== 100 && <small>请调整至 100% 后保存</small>}</div></div><div className="ruleColumns"><div className="ruleSection"><h3>结论阈值</h3><div className="thresholds"><label><i className="t1" /><span>优先推进</span><strong>≥ 85</strong></label><label><i className="t2" /><span>重点储备</span><strong>70–84</strong></label><label><i className="t3" /><span>持续观察</span><strong>55–69</strong></label><label><i className="t4" /><span>暂不匹配</span><strong>＜ 55</strong></label></div></div><div className="ruleSection"><h3>资料覆盖率</h3><div className="thresholds"><label><i className="t1" /><span>正式结论</span><strong>≥ 80%</strong></label><label><i className="t2" /><span>初步结论</span><strong>60%–79%</strong></label><label><i className="t4" /><span>资料不足</span><strong>＜ 60%</strong></label></div></div></div></section> : tab === 'users' ? userManagement : <section className="panel settingsPlaceholder"><ActiveIcon size={30} /><h2>{activeTab[1]}</h2><p>已切换到{activeTab[1]}模块。此区域将在接入后端管理接口后显示真实配置内容。</p></section>}
+  return <div className="pageContent settingsPage"><div className="settingsNav panel">{tabs.map(([id, label, Icon]) => <button type="button" className={tab === id ? 'active' : ''} onClick={() => setTab(id)} key={id} title={['matching', 'scoring', 'dictionary'].includes(id) ? '仅系统管理员可见' : undefined}><Icon />{label}{['matching', 'scoring', 'dictionary'].includes(id) && <small>管理员</small>}</button>)}</div>{tab === 'matching' ? <section className="panel rulePanel"><SectionTitle title="匹配规则 v1.0" meta="管理员专属配置 · 当前生效版本 · 2026年9月4日启用" action={<div className="ruleActions"><button type="button" onClick={() => setHistoryOpen(true)}>查看历史版本</button><button className="primaryAction" type="button" disabled={total !== 100} onClick={() => setSaveOpen(true)}><Save size={16} />另存新版本</button></div>} /><div className="ruleSection"><h3>八维权重</h3><p>所有权重合计必须为 100%。调整后需要另存版本，历史结果不会被重算覆盖。</p><div className="weightGrid">{weights.map(([name, value], index) => <label key={name}><span>{name}</span><div><input type="number" min="0" max="100" value={value} onChange={(event) => setWeights((items) => items.map((item, itemIndex) => itemIndex === index ? [item[0], event.target.value] : item))} /><em>%</em></div></label>)}</div><div className={`weightTotal ${total !== 100 ? 'invalid' : ''}`}><span>权重合计</span><strong>{total}%</strong>{total !== 100 && <small>请调整至 100% 后保存</small>}</div></div><div className="ruleColumns"><div className="ruleSection"><h3>结论阈值</h3><div className="thresholds"><label><i className="t1" /><span>优先推进</span><strong>≥ 85</strong></label><label><i className="t2" /><span>重点储备</span><strong>70–84</strong></label><label><i className="t3" /><span>持续观察</span><strong>55–69</strong></label><label><i className="t4" /><span>暂不匹配</span><strong>＜ 55</strong></label></div></div><div className="ruleSection"><h3>资料覆盖率</h3><div className="thresholds"><label><i className="t1" /><span>正式结论</span><strong>≥ 80%</strong></label><label><i className="t2" /><span>初步结论</span><strong>60%–79%</strong></label><label><i className="t4" /><span>资料不足</span><strong>＜ 60%</strong></label></div></div></div></section> : tab === 'users' ? userManagement : <section className="panel settingsPlaceholder"><ActiveIcon size={30} /><h2>{activeTab[1]}</h2><p>已切换到{activeTab[1]}模块。此区域将在接入后端管理接口后显示真实配置内容。</p></section>}
     {historyOpen && <GlassDialog title="匹配规则历史版本" subtitle="历史版本仅供追溯，不会影响当前匹配结果" onClose={() => setHistoryOpen(false)} actions={<button type="button" className="primaryAction" onClick={() => setHistoryOpen(false)}>关闭</button>}><div className="versionList"><div><strong>v1.0 · 当前生效</strong><span>2026年9月4日 · 唐好</span></div><div><strong>v0.9 · 初始评审版</strong><span>2026年8月28日 · 陈昱</span></div></div></GlassDialog>}
     {saveOpen && <GlassDialog title="另存匹配规则版本" subtitle="新版本将保留当前八维权重配置" onClose={() => setSaveOpen(false)} actions={<><button type="button" onClick={() => setSaveOpen(false)}>取消</button><button type="submit" form="version-save-form" className="primaryAction">保存 v1.1</button></>}><form id="version-save-form" className="dialogForm" onSubmit={saveVersion}><DialogField label="版本说明" full><textarea rows="4" required value={versionNote} onChange={(event) => setVersionNote(event.target.value)} placeholder="说明本次调整的业务原因" /></DialogField></form></GlassDialog>}
     {userCreateOpen && <GlassDialog title="新增管理人员" subtitle="创建账户并分配最小必要权限" onClose={() => setUserCreateOpen(false)} actions={<><button type="button" onClick={() => setUserCreateOpen(false)}>取消</button><button type="submit" form="user-create-form" className="primaryAction">创建账户</button></>}><form id="user-create-form" className="dialogForm" onSubmit={createUser}><DialogField label="姓名"><input required autoFocus value={userForm.name} onChange={(event) => setUserForm({ ...userForm, name: event.target.value })} placeholder="请输入姓名" /></DialogField><DialogField label="登录账户"><input value={userForm.account} onChange={(event) => setUserForm({ ...userForm, account: event.target.value })} placeholder="留空则自动生成" /></DialogField><DialogField label="所属部门"><select value={userForm.department} onChange={(event) => setUserForm({ ...userForm, department: event.target.value })}><option>资产经营部</option><option>招商运营部</option><option>数据管理部</option><option>系统管理</option></select></DialogField><DialogField label="系统角色"><select value={userForm.role} onChange={(event) => setUserForm({ ...userForm, role: event.target.value })}><option>项目管理员</option><option>招商管理员</option><option>数据管理员</option><option>只读用户</option></select></DialogField><DialogField label="安全验证" full><select value={userForm.mfa} onChange={(event) => setUserForm({ ...userForm, mfa: event.target.value })}><option>强制启用</option><option>首次登录提醒启用</option></select></DialogField></form></GlassDialog>}
@@ -1009,7 +1114,7 @@ export default function App() {
   const pages = {
     dashboard: <DashboardPage onNavigate={setCurrent} />, map: <MapPage onNavigate={setCurrent} />, brands: <BrandsPage onNavigate={setCurrent} notify={notify} />,
     projects: <ProjectsPage notify={notify} />, operations: <OperationsPage notify={notify} />, matching: <MatchingPage onNavigate={setCurrent} notify={notify} />, followup: <FollowupPage notify={notify} />,
-    import: <ImportPage notify={notify} />, settings: <SettingsPage notify={notify} />,
+    management: <ManagementCenter notify={notify} />, import: <ImportPage notify={notify} />, settings: <SettingsPage notify={notify} />,
   }
   return <div className="appShell">
     <SideNav current={current} onNavigate={setCurrent} />

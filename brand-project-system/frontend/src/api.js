@@ -91,6 +91,47 @@ export async function getAdjustmentPlan(id) {
   return apiGet(`/projects/${id}/adjustment-plan`)
 }
 
+export async function getUnitLayout(id) {
+  return apiGet(`/projects/${id}/unit-layout`)
+}
+
+export async function getAdjustmentRoadmap(id) {
+  return apiGet(`/projects/${id}/adjustment-roadmap`)
+}
+
+async function apiWrite(path, method, payload) {
+  if (!token) await login()
+  const call = () => fetch(`${BASE}/api/v1${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(payload ? { 'Content-Type': 'application/json' } : {}),
+    },
+    ...(payload ? { body: JSON.stringify(payload) } : {}),
+  })
+  let res = await call()
+  if (res.status === 401) {
+    await login()
+    res = await call()
+  }
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}))
+    const error = new Error(detail.detail || `请求失败 ${res.status}: ${path}`)
+    error.status = res.status
+    throw error
+  }
+  if (res.status === 204) return null
+  return res.json()
+}
+
+export function putAdjustmentPlan(id, unitId, body) {
+  return apiWrite(`/projects/${id}/adjustment-plan/${unitId}`, 'PUT', body)
+}
+
+export function deleteAdjustmentPlan(id, unitId) {
+  return apiWrite(`/projects/${id}/adjustment-plan/${unitId}`, 'DELETE')
+}
+
 // 项目名 → 后端真实 id（前端项目卡列表仍是演示数据时用于对接台账）
 export async function resolveProjectIdByName(name) {
   const norm = (s) => (s || '').replace(/\s+/g, '')
