@@ -67,3 +67,40 @@ def test_viewer_cannot_run_import_or_dict(client):
     h = _token(client, "viewer1")
     assert client.post("/api/v1/dicts", headers=h,
                        json={"dict_type": "x", "code": "y", "label": "y"}).status_code == 403
+
+
+# ---------- 回归：seed_role_permissions 必须真正把角色→权限点写进库 ----------
+# （历史 bug：roles/permissions 表已建时整段种子被跳过，role_permissions 从未写入，
+#   导致除 admin 外所有角色登录后权限点为 0——这里独立验证该回填函数本身。）
+
+def test_seed_role_permissions_backfills_from_empty(tmp_path):
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+
+    from app.database import Base
+    from app.models import Permission, Role, RolePermission
+    from app.seed import PERMISSIONS, ROLES, seed_role_permissions
+
+    eng = create_engine("sqlite://", connect_args={"check_same_thread": False},
+                        poolclass=StaticPool, future=True)
+    Base.metadata.create_all(eng)
+    s = sessionmaker(bind=eng, future=True)()
+    for code, name in ROLES:
+        s.add(Role(code=code, name=name))
+    for code, name, res, act in PERMISSIONS:
+        s.add(Permission(code=code, name=name, resource=res, action=act))
+    s.flush()
+
+    assert s.query(RolePermission).count() == 0   # 回填前应为空（模拟历史坏库）
+    added = seed_role_permissions(s)
+    s.commit()
+    assert added > 0
+    viewer = s.query(Role).filter(Role.code == "viewer").first()
+    viewer_perms = {p.code for p in s.query(Permission).join(
+        RolePermission, RolePermission.permission_id == Permission.id
+    ).filter(RolePermission.role_id == viewer.id).all()}
+    assert "brand:read" in viewer_perms and "brand:write" not in viewer_perms
+    # 再跑一次不应重复插入（幂等）
+    assert seed_role_permissions(s) == 0
+    s.close()

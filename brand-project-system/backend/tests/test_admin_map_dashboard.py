@@ -86,3 +86,11 @@ def test_admin_audit_logs(client, auth):
     r = client.get("/api/v1/admin/audit-logs?entity_type=brand", headers=auth)
     assert r.status_code == 200
     assert any(x["action"] == "create" for x in r.json())
+
+
+def test_risk_alerts_shape(client, auth):
+    r = client.get("/api/v1/dashboard/risk-alerts", headers=auth)
+    assert r.status_code == 200
+    d = r.json()
+    assert "summary" in d and "arrears_top" in d and "expiring_leases" in d and "vacant_top" in d
+    assert d["summary"]["total_arrears"] >= 0

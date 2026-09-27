@@ -75,6 +75,8 @@ class BrandExpansion(Base):
     power_req_kw = Column(Float)
     needs_gas = Column(Boolean)
     rent_tolerance = Column(String(120))
+    property_preference = Column(String(200))   # 物业偏好：楼层/层高/临街等要求
+    opening_plan = Column(String(100))          # 开店计划：签约后预计开业周期
 
     brand = relationship("Brand", back_populates="expansion")
 

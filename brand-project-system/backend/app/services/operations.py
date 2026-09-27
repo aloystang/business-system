@@ -14,7 +14,7 @@ from datetime import date, timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from ..models import Lease, Project, ProjectCost, Receivable, Unit
+from ..models import Lease, Merchant, Project, ProjectCost, Receivable, Unit
 
 _RENTED = ("在租", "自营")
 
@@ -157,4 +157,65 @@ def portfolio_operations(db: Session, period: str | None = None) -> dict:
         "period": period or "全部", "kpi": kpi, "projects": rows,
         "revenue_structure": rev_struct, "cost_structure": cost_struct,
         "arrears_top": sorted(rows, key=lambda r: r["arrears"], reverse=True)[:5],
+    }
+
+
+def portfolio_risk_alerts(db: Session, expiring_days: int = 90, top_n: int = 8) -> dict:
+    """跨项目运营风险看板：欠租 Top、近期到期租约、空置面积 Top。
+    与 portfolio_operations 共用口径，但聚焦"哪几项需要人管"而非整体规模。"""
+    projects = {p.id: p for p in db.query(Project).filter(Project.is_deleted.is_(False)).all()}
+    today = date.today()
+    horizon = today + timedelta(days=expiring_days)
+
+    # 欠租 Top：按项目汇总本期欠租金额（跨 period，取全部未结清）
+    arrears_by_project: dict[int, float] = {}
+    for pid, amt in (db.query(Receivable.project_id, func.coalesce(func.sum(Receivable.arrears), 0.0))
+                     .filter(Receivable.arrears > 0).group_by(Receivable.project_id).all()):
+        if amt:
+            arrears_by_project[pid] = _round(amt)
+    arrears_top = sorted(
+        [{"project_id": pid, "project_name": projects[pid].project_name, "arrears": amt}
+         for pid, amt in arrears_by_project.items() if pid in projects],
+        key=lambda r: r["arrears"], reverse=True)[:top_n]
+
+    # 近期到期租约（跨全部项目），按剩余天数升序
+    expiring = []
+    leases = (db.query(Lease).filter(
+        Lease.lease_status == "生效", Lease.end_date.isnot(None),
+        Lease.end_date >= today, Lease.end_date <= horizon).all())
+    merchant_names = {m.id: m.name for m in db.query(Merchant).all()}
+    for ll in leases:
+        if ll.project_id not in projects:
+            continue
+        expiring.append({
+            "project_id": ll.project_id, "project_name": projects[ll.project_id].project_name,
+            "lease_code": ll.lease_code, "tenant": merchant_names.get(ll.merchant_id, "—"),
+            "lease_end": ll.end_date.isoformat(),
+            "days_left": (ll.end_date - today).days,
+            "monthly_rent": _round(ll.base_rent),
+        })
+    expiring.sort(key=lambda r: r["days_left"])
+
+    # 空置 Top：按项目汇总空置铺位数/面积
+    vacant_by_project: dict[int, dict] = {}
+    for pid, cnt, area in (db.query(Unit.project_id, func.count(),
+                                    func.coalesce(func.sum(Unit.rentable_area_m2), 0.0))
+                           .filter(Unit.status == "空置").group_by(Unit.project_id).all()):
+        if pid in projects:
+            vacant_by_project[pid] = {"project_id": pid, "project_name": projects[pid].project_name,
+                                      "vacant_units": cnt, "vacant_area": _round(area)}
+    vacant_top = sorted(vacant_by_project.values(), key=lambda r: r["vacant_area"], reverse=True)[:top_n]
+
+    return {
+        "expiring_days": expiring_days,
+        "summary": {
+            "projects_with_arrears": len(arrears_by_project),
+            "total_arrears": _round(sum(arrears_by_project.values())),
+            "expiring_lease_count": len(expiring),
+            "expiring_rent_at_risk": _round(sum(e["monthly_rent"] for e in expiring)),
+            "vacant_unit_total": sum(v["vacant_units"] for v in vacant_by_project.values()),
+        },
+        "arrears_top": arrears_top,
+        "expiring_leases": expiring[:top_n * 3],
+        "vacant_top": vacant_top,
     }

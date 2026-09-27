@@ -33,6 +33,16 @@ app.add_middleware(
 )
 
 
+@app.get("/", tags=["系统"])
+def root():
+    return {
+        "status": "ok",
+        "service": "品牌与项目资源管理系统 API",
+        "health": "/api/v1/health",
+        "docs": "/docs",
+    }
+
+
 @app.get("/api/v1/health", tags=["系统"])
 def health():
     return {"status": "ok", "version": __version__, "coordinate_system": settings.db_coordinate_system}

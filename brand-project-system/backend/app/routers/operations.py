@@ -26,3 +26,10 @@ def portfolio_operations(period: str | None = None, db: Session = Depends(get_db
                          _=Depends(get_current_user)):
     """首页 · 多项目经营总览：组合 KPI、项目对比榜、收入/成本结构、欠租 Top。"""
     return ops.portfolio_operations(db, period)
+
+
+@router.get("/dashboard/risk-alerts")
+def portfolio_risk_alerts(expiring_days: int = 90, top_n: int = 8,
+                          db: Session = Depends(get_db), _=Depends(get_current_user)):
+    """首页/管理中心 · 跨项目运营风险：欠租 Top、近期到期租约、空置 Top。"""
+    return ops.portfolio_risk_alerts(db, expiring_days, top_n)

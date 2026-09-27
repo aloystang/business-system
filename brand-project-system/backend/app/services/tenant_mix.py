@@ -328,3 +328,85 @@ def adjustment_roadmap(db: Session, project_id: int, today: date | None = None) 
         "batches": batches,
         "expiry_windows": expiry_windows,
     }
+
+
+# ---------- 提前置换 vs 等到期：成本收益对比（估算，假设参数可覆盖） ----------
+
+# 默认假设（无真实历史解约案例时的估算口径，返回体里会原样带出，前端应标注"估算"）
+_DEFAULT_TERMINATION_MONTHS = 3.0   # 解约补偿 = 现租金 × N 月
+_DEFAULT_FREE_RENT_MONTHS = 2.0     # 提前置换后给新租户的免租期（月）
+_DEFAULT_FITOUT_PSM = 400.0         # 装修/改造一次性成本（元/㎡）
+_DEFAULT_HORIZON_MONTHS = 24        # 对比考察期（月）
+
+
+def early_swap_tradeoff(
+    db: Session, project_id: int, unit_id: int,
+    termination_months: float | None = None, free_rent_months: float | None = None,
+    fitout_cost_psm: float | None = None, horizon_months: int | None = None,
+) -> dict:
+    """对比同一铺位「等到期自然调整」vs「提前置换」在考察期内的净现金对比。
+
+    仅估算，用于辅助判断"哪些铺值得花钱提前动"；口径：
+    - 等到期：到期前收现租，到期后收新租（计划的 expected_rent），无额外成本；
+    - 提前置换：即刻起按新租收，但要扣：解约补偿(现租金×N月) + 免租期(新租金×N月) + 装修(面积×单价)。
+    """
+    termination_months = _DEFAULT_TERMINATION_MONTHS if termination_months is None else termination_months
+    free_rent_months = _DEFAULT_FREE_RENT_MONTHS if free_rent_months is None else free_rent_months
+    fitout_cost_psm = _DEFAULT_FITOUT_PSM if fitout_cost_psm is None else fitout_cost_psm
+    horizon_months = _DEFAULT_HORIZON_MONTHS if horizon_months is None else horizon_months
+
+    unit = db.get(Unit, unit_id)
+    if not unit or unit.project_id != project_id:
+        raise ValueError("铺位不存在或不属于该项目")
+    plan = db.query(UnitAdjustmentPlan).filter(UnitAdjustmentPlan.unit_id == unit_id).first()
+    if not plan:
+        raise ValueError("该铺位暂无调改计划，无法测算")
+    area = unit.rentable_area_m2 or 0.0
+    _, rent_by_unit, _ = _unit_context(db, project_id)
+    current_rent = rent_by_unit.get(unit_id, 0.0)
+    expected_rent = (plan.expected_rent if plan.expected_rent is not None
+                    else (plan.expected_rent_psm or 0.0) * area)
+
+    occupied = unit.status in _RENTED
+    lease_end = _active_lease_end(db, project_id).get(unit_id)
+    if not occupied or lease_end is None:
+        return {
+            "unit_id": unit_id, "unit_code": unit.unit_code, "applicable": False,
+            "reason": "该铺位当前空置，无在租租约可提前解约——直接招商即可，无需对比。",
+        }
+
+    today = date.today()
+    months_to_expiry = max(0.0, (lease_end.year - today.year) * 12
+                           + (lease_end.month - today.month)
+                           + (lease_end.day - today.day) / 30.0)
+    months_to_expiry = min(months_to_expiry, horizon_months)
+
+    wait_net = (current_rent * months_to_expiry
+               + expected_rent * max(0.0, horizon_months - months_to_expiry))
+    termination_cost = current_rent * termination_months
+    free_rent_cost = expected_rent * free_rent_months
+    fitout_cost = area * fitout_cost_psm
+    early_net = (expected_rent * horizon_months
+                - termination_cost - free_rent_cost - fitout_cost)
+    delta = _round(early_net - wait_net)
+
+    return {
+        "unit_id": unit_id, "unit_code": unit.unit_code, "applicable": True,
+        "assumptions": {
+            "termination_months": termination_months, "free_rent_months": free_rent_months,
+            "fitout_cost_psm": fitout_cost_psm, "horizon_months": horizon_months,
+            "note": "解约补偿/免租期/装修单价为估算假设（无真实历史解约案例），可按项目实际经验调整。",
+        },
+        "inputs": {"current_rent": _round(current_rent), "expected_rent": _round(expected_rent),
+                   "area": _round(area), "lease_end": lease_end.isoformat(),
+                   "months_to_expiry": round(months_to_expiry, 1)},
+        "wait": {"label": "等到期自然调整", "net_cash_over_horizon": _round(wait_net),
+                "one_time_cost": 0.0},
+        "early": {"label": "提前置换", "net_cash_over_horizon": _round(early_net),
+                 "one_time_cost": _round(termination_cost + free_rent_cost + fitout_cost),
+                 "cost_breakdown": {"解约补偿": _round(termination_cost),
+                                    "免租期损失": _round(free_rent_cost),
+                                    "装修改造": _round(fitout_cost)}},
+        "recommendation": "提前置换更划算" if delta > 0 else "建议等到期",
+        "net_benefit_of_early": delta,
+    }

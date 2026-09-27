@@ -16,6 +16,8 @@ class UserOut(BaseModel):
     username: str
     display_name: str | None = None
     role: str
+    role_label: str = ""
+    permissions: list[str] = []
     model_config = {"from_attributes": True}
 
 
@@ -33,6 +35,13 @@ class BrandOut(BaseModel):
     hq_city: str | None = None
     cooperation_intent: str | None = None
     grade: str | None = None
+    # 拓展要求关键字段（来自 brand_expansion_requirements，list/get 均已联查带出）
+    area_min: float | None = None
+    area_max: float | None = None
+    power_req_kw: float | None = None
+    needs_gas: bool | None = None
+    property_preference: str | None = None
+    opening_plan: str | None = None
     model_config = {"from_attributes": True}
 
 
@@ -240,6 +249,8 @@ class ExpansionIn(BaseModel):
     power_req_kw: float | None = None
     needs_gas: bool | None = None
     rent_tolerance: str | None = None
+    property_preference: str | None = None
+    opening_plan: str | None = None
 
 
 class ExpansionOut(ExpansionIn):

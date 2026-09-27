@@ -113,27 +113,54 @@ PROJECTS = [
 ]
 
 # (code, name, short, l1, l2, l3, tags, coop_intent, grade,
-#  target_cities, acceptable_types, accept_stadium, area_min, area_max, needs_gas)
+#  target_cities, acceptable_types, accept_stadium, area_min, area_max, needs_gas,
+#  property_preference, opening_plan)
 BRANDS = [
     ("XS-BRD-0001", "迪卡侬", "迪卡侬", "零售", "服饰鞋包", "运动户外",
      "全国连锁;体育相关品牌;主力店;首店资源", "较强", "A",
-     "重庆;成都", "体育场馆商业;购物中心;商业街区", True, 800, 2500, False),
+     "重庆;成都", "体育场馆商业;购物中心;商业街区", True, 800, 2500, False, 250,
+     "首层/跨层·层高≥4.5m", "6-12个月"),
     ("XS-BRD-0002", "超级猩猩", "超级猩猩", "文体娱乐", "运动健身", "健身房",
      "区域连锁;体育相关品牌;潮流或网红品牌", "强", "B",
-     "重庆", "体育场馆商业;购物中心", True, 300, 600, False),
+     "重庆", "体育场馆商业;购物中心", True, 300, 600, False, 120,
+     "2-4层·层高≥3.6m", "3-6个月"),
     ("XS-BRD-0003", "海底捞", "海底捞", "餐饮", "正餐", "火锅",
      "全国连锁;主力店", "一般", "A",
-     "重庆", "购物中心;商业街区", False, 600, 1200, True),
+     "重庆", "购物中心;商业街区", False, 600, 1200, True, None,
+     "餐饮层·独立卸货", "6-9个月"),
     ("XS-BRD-0004", "孩子王", "孩子王", "亲子教育", "儿童零售", "母婴用品",
      "全国连锁;主力店", "较强", "B",
-     "重庆", "购物中心", False, 500, 1500, False),
+     "重庆", "购物中心", False, 500, 1500, False, 180,
+     "低楼层·大面宽", "6-10个月"),
     ("XS-BRD-0005", "名创优品", "名创优品", "零售", "生活百货", "综合零售",
      "全国连锁", "较强", "B",
-     "重庆", "购物中心;商业街区;社区商业", False, 150, 400, False),
+     "重庆", "购物中心;商业街区;社区商业", False, 150, 400, False, 80,
+     "首层优先·临主通道", "3-5个月"),
     ("XS-BRD-0006", "瑞幸咖啡", "瑞幸", "餐饮", "饮品甜点", "咖啡",
      "全国连锁;首店资源", "强", "A",
-     "重庆", "购物中心;商业街区;社区商业;体育场馆商业", True, 40, 120, False),
+     "重庆", "购物中心;商业街区;社区商业;体育场馆商业", True, 40, 120, False, 60,
+     "首层·临街/主通道", "2-3个月"),
 ]
+
+
+def seed_role_permissions(db) -> int:
+    """角色→权限点结算表回填。独立判空（不依赖 Role/Permission 是否新建），
+    可重复调用；修复过历史遗留问题——曾有库 roles/permissions 已建但
+    role_permissions 从未写入，导致除 admin 外所有角色实际权限点为 0。
+    返回新增的行数（0 = 已是最新，无需回填）。"""
+    if db.query(RolePermission).first():
+        return 0
+    role_by_code = {r.code: r.id for r in db.query(Role).all()}
+    perm_by_code = {p.code: p.id for p in db.query(Permission).all()}
+    added = 0
+    for rcode, pcodes in ROLE_PERMS.items():
+        for pcode in pcodes:
+            if rcode in role_by_code and pcode in perm_by_code:
+                db.add(RolePermission(role_id=role_by_code[rcode],
+                                      permission_id=perm_by_code[pcode]))
+                added += 1
+    db.flush()
+    return added
 
 
 def _seed_category_tree(db) -> None:
@@ -225,13 +252,8 @@ def seed():
             for code, name, res, act in PERMISSIONS:
                 db.add(Permission(code=code, name=name, resource=res, action=act))
             db.flush()
-            # 角色→权限点结算表
-            role_by_code = {r.code: r.id for r in db.query(Role).all()}
-            perm_by_code = {p.code: p.id for p in db.query(Permission).all()}
-            for rcode, pcodes in ROLE_PERMS.items():
-                for pcode in pcodes:
-                    db.add(RolePermission(role_id=role_by_code[rcode],
-                                          permission_id=perm_by_code[pcode]))
+
+        seed_role_permissions(db)
 
         if not db.query(User).filter(User.username == settings.admin_username).first():
             admin = User(username=settings.admin_username, display_name="系统管理员",
@@ -241,6 +263,23 @@ def seed():
             admin_role = db.query(Role).filter(Role.code == "admin").first()
             if admin_role:
                 db.add(UserRole(user_id=admin.id, role_id=admin_role.id))
+
+        # 各角色示例账号（密码均为 demo1234），复用前端演示里已出现的负责人姓名，
+        # 便于"以某人身份登录"时体验连贯；生产上线前应改为真实姓名+强密码。
+        DEMO_USERS = [
+            ("chenyu", "陈昱", "project_mgr"),
+            ("liran", "李然", "brand_bd"),
+            ("zhaoqing", "赵青", "executive"),
+            ("wangke", "王珂", "viewer"),
+        ]
+        if not db.query(User).filter(User.username == "chenyu").first():
+            role_by_code2 = {r.code: r.id for r in db.query(Role).all()}
+            for uname, dname, rcode in DEMO_USERS:
+                u = User(username=uname, display_name=dname,
+                        password_hash=hash_password("demo1234"), role=rcode)
+                db.add(u); db.flush()
+                if rcode in role_by_code2:
+                    db.add(UserRole(user_id=u.id, role_id=role_by_code2[rcode]))
 
         if not db.query(Dictionary).first():
             for dtype, labels in DICTS.items():
@@ -278,7 +317,7 @@ def seed():
 
         if not db.query(Brand).first():
             for (code, name, short, l1, l2, l3, tags, coop, grade, tcities, atypes, stadium,
-                 amin, amax, gas) in BRANDS:
+                 amin, amax, gas, power, prop_pref, opening) in BRANDS:
                 b = Brand(brand_code=code, brand_name=name, brand_short_name=short,
                           l1_category=l1, l2_category=l2, l3_category=l3, tags=tags,
                           operating_status="正常经营",
@@ -287,7 +326,19 @@ def seed():
                 db.add(BrandExpansion(brand_id=b.id, target_cities=tcities,
                                       acceptable_project_types=atypes,
                                       accept_stadium_commercial=stadium, accept_new_project=True,
-                                      area_min=amin, area_max=amax, needs_gas=gas))
+                                      area_min=amin, area_max=amax, needs_gas=gas,
+                                      power_req_kw=power,
+                                      property_preference=prop_pref, opening_plan=opening))
+        else:
+            # 存量库回填：老库已有品牌+拓展要求，但没有 power_req_kw/property_preference/
+            # opening_plan 这几个新列（此前前端一直显示假数据，现在补真值）。
+            for row in BRANDS:
+                code, power, prop_pref, opening = row[0], row[15], row[16], row[17]
+                exp = (db.query(BrandExpansion).join(Brand)
+                      .filter(Brand.brand_code == code).first())
+                if exp and exp.property_preference is None:
+                    exp.power_req_kw = power
+                    exp.property_preference, exp.opening_plan = prop_pref, opening
 
         if not db.query(Unit).first():
             _seed_leasing(db)
@@ -301,6 +352,8 @@ def seed():
         print("✅ 初始化完成：管理员 + 真实项目 + 模拟品牌 + 全项目经营台账示例。")
         print(f"   台账示例：{ops_result}")
         print(f"   登录：{settings.admin_username} / {settings.admin_password}")
+        print("   角色示例账号（密码均 demo1234）：chenyu-项目招商经理 / liran-招商拓展经理 "
+              "/ zhaoqing-管理层 / wangke-受限查看者")
     finally:
         db.close()
 

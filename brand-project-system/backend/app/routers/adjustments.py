@@ -56,6 +56,23 @@ def get_adjustment_roadmap(project_id: int, db: Session = Depends(get_db),
     return tenant_mix.adjustment_roadmap(db, project_id)
 
 
+@router.get("/{project_id}/adjustment-plan/{unit_id}/early-swap-tradeoff")
+def get_early_swap_tradeoff(
+    project_id: int, unit_id: int,
+    termination_months: float | None = None, free_rent_months: float | None = None,
+    fitout_cost_psm: float | None = None, horizon_months: int | None = None,
+    db: Session = Depends(get_db), _=Depends(get_current_user),
+):
+    """提前置换 vs 等到期 的成本收益对比（估算；可传参覆盖默认假设）。"""
+    _project_or_404(db, project_id)
+    try:
+        return tenant_mix.early_swap_tradeoff(
+            db, project_id, unit_id, termination_months, free_rent_months,
+            fitout_cost_psm, horizon_months)
+    except ValueError as e:
+        raise HTTPException(404, str(e))
+
+
 @router.put("/{project_id}/adjustment-plan/{unit_id}")
 def upsert_plan(project_id: int, unit_id: int, body: AdjustmentPlanIn,
                 db: Session = Depends(get_db),

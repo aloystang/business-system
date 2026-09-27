@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..config import get_settings
 from ..database import get_db
-from ..deps import get_current_user
+from ..deps import get_current_user, user_permission_codes, user_role_label
 from ..models import User
 from ..schemas import TokenOut, UserOut
 from ..security import create_access_token, verify_password
@@ -34,5 +34,9 @@ def login(request: Request, form: OAuth2PasswordRequestForm = Depends(),
 
 
 @router.get("/me", response_model=UserOut)
-def me(user: User = Depends(get_current_user)):
-    return user
+def me(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return UserOut(
+        id=user.id, username=user.username, display_name=user.display_name,
+        role=user.role, role_label=user_role_label(db, user),
+        permissions=user_permission_codes(db, user),
+    )

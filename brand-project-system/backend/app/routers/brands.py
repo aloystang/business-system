@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from ..database import get_db
 from ..deps import get_current_user, require_perm
@@ -24,15 +24,28 @@ def _get(db: Session, brand_id: int) -> Brand:
     return b
 
 
+def _to_out(b: Brand) -> BrandOut:
+    """Brand + 联查的 expansion 拉平成一条 BrandOut，供列表/详情复用。"""
+    out = BrandOut.model_validate(b)
+    exp = b.expansion
+    if exp:
+        out.area_min, out.area_max = exp.area_min, exp.area_max
+        out.power_req_kw, out.needs_gas = exp.power_req_kw, exp.needs_gas
+        out.property_preference = exp.property_preference
+        out.opening_plan = exp.opening_plan
+    return out
+
+
 @router.get("", response_model=list[BrandOut])
 def list_brands(q: str | None = None, l1: str | None = None,
                 db: Session = Depends(get_db), _: User = Depends(get_current_user)):
-    query = db.query(Brand).filter(Brand.is_deleted.is_(False))
+    query = db.query(Brand).options(joinedload(Brand.expansion)).filter(
+        Brand.is_deleted.is_(False))
     if q:
         query = query.filter(Brand.brand_name.like(f"%{q}%"))
     if l1:
         query = query.filter(Brand.l1_category == l1)
-    return query.order_by(Brand.brand_code).all()
+    return [_to_out(b) for b in query.order_by(Brand.brand_code).all()]
 
 
 @router.post("", response_model=BrandOut, status_code=201)
@@ -56,7 +69,7 @@ def create_brand(body: BrandCreate, db: Session = Depends(get_db),
 
 @router.get("/{brand_id}", response_model=BrandOut)
 def get_brand(brand_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
-    return _get(db, brand_id)
+    return _to_out(_get(db, brand_id))
 
 
 @router.patch("/{brand_id}", response_model=BrandOut)

@@ -90,6 +90,31 @@ def test_roadmap_buckets_by_quarter(sdb):
     assert b["cum_occupancy_rate"] > rm["summary"]["current_occupancy_rate"]  # 空置招商→出租率升
 
 
+def test_early_swap_not_applicable_when_vacant(sdb):
+    s, p = sdb
+    vac = s.query(Unit).filter(Unit.project_id == p.id, Unit.status == "空置").first()
+    s.add(UnitAdjustmentPlan(project_id=p.id, unit_id=vac.id, action="新招商",
+                             to_format="餐饮", expected_rent_psm=200))
+    s.commit()
+    out = tenant_mix.early_swap_tradeoff(s, p.id, vac.id)
+    assert out["applicable"] is False
+
+
+def test_early_swap_big_uplift_favors_early(sdb):
+    s, p = sdb
+    from datetime import date
+    rented = s.query(Unit).filter(Unit.project_id == p.id, Unit.status == "在租").first()
+    lease = s.query(Lease).filter(Lease.unit_id == rented.id).first()
+    lease.end_date = date.today().replace(year=date.today().year + 3)  # 到期还早
+    s.add(UnitAdjustmentPlan(project_id=p.id, unit_id=rented.id, action="置换",
+                             to_format="餐饮", expected_rent=lease.base_rent * 3))  # 大幅提租
+    s.commit()
+    out = tenant_mix.early_swap_tradeoff(s, p.id, rented.id, horizon_months=36)
+    assert out["applicable"] is True
+    assert out["recommendation"] == "提前置换更划算"
+    assert out["net_benefit_of_early"] > 0
+
+
 # ---------- API 层 ----------
 
 def _session():

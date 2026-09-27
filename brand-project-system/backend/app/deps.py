@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from .database import get_db
-from .models import Permission, RolePermission, User, UserRole
+from .models import Permission, Role, RolePermission, User, UserRole
 from .security import decode_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -41,6 +41,23 @@ def user_has_permission(db: Session, user: User, code: str) -> bool:
            .filter(UserRole.user_id == user.id, Permission.code == code)
            .first())
     return hit is not None
+
+
+def user_permission_codes(db: Session, user: User) -> list[str]:
+    """该用户经其角色实际拥有的全部权限点代码（供前端按权限显隐/禁用控件）。"""
+    if user.role == "admin":
+        return [p.code for p in db.query(Permission).all()]
+    rows = (db.query(Permission.code)
+            .join(RolePermission, RolePermission.permission_id == Permission.id)
+            .join(UserRole, UserRole.role_id == RolePermission.role_id)
+            .filter(UserRole.user_id == user.id).distinct().all())
+    return sorted({r[0] for r in rows})
+
+
+def user_role_label(db: Session, user: User) -> str:
+    """用户主角色的中文名（找不到就回退原始 role 代码）。"""
+    role = db.query(Role).filter(Role.code == user.role).first()
+    return role.name if role else user.role
 
 
 def require_perm(code: str):
