@@ -117,7 +117,7 @@ def portfolio_operations(db: Session, period: str | None = None) -> dict:
     projects = db.query(Project).filter(Project.is_deleted.is_(False)).all()
     rows = []
     tot = {"revenue_due": 0.0, "revenue_recv": 0.0, "cost": 0.0, "noi": 0.0,
-           "arrears": 0.0, "units": 0, "rented": 0}
+           "arrears": 0.0, "units": 0, "rented": 0, "area_total": 0.0, "area_rented": 0.0}
     rev_struct, cost_struct = {}, {}
     for p in projects:
         op = project_operations(db, p.id, period)
@@ -138,6 +138,8 @@ def portfolio_operations(db: Session, period: str | None = None) -> dict:
         tot["arrears"] += op["revenue"]["arrears_total"]
         tot["units"] += op["occupancy"]["unit_total"]
         tot["rented"] += op["occupancy"]["rented"]
+        tot["area_total"] += op["occupancy"]["area_total"]
+        tot["area_rented"] += op["occupancy"]["area_rented"]
         for k, v in op["revenue"]["revenue_received_by_item"].items():
             rev_struct[k] = _round(rev_struct.get(k, 0.0) + v)
         for k, v in op["cost"]["cost_by_type"].items():
@@ -147,6 +149,9 @@ def portfolio_operations(db: Session, period: str | None = None) -> dict:
     kpi = {
         "project_count": len(projects), "unit_total": tot["units"],
         "occupancy_rate": round(tot["rented"] / tot["units"], 4) if tot["units"] else 0.0,
+        "area_total": _round(tot["area_total"]), "area_rented": _round(tot["area_rented"]),
+        "area_occupancy_rate": round(tot["area_rented"] / tot["area_total"], 4)
+        if tot["area_total"] else 0.0,
         "revenue_received": _round(tot["revenue_recv"]),
         "cost": _round(tot["cost"]), "noi": _round(tot["noi"]),
         "collect_rate": round(tot["revenue_recv"] / tot["revenue_due"], 4)
