@@ -1881,7 +1881,7 @@ button.operationProjectMetric:hover { border-color: rgba(220,106,53,.35); backgr
 .manager-contractTable button span > small,
 .manager-riskTable button span > small { margin-top: 4px; color: var(--muted); font-size: 10px; }
 .manager-status { width: fit-content; padding: 4px 7px; border-radius: 7px; color: #9e5d2d; background: rgba(220,142,64,.12); font-size: 10px; font-style: normal; white-space: nowrap; }
-.status-已闭环,.status-已通过,.status-已关闭 { color: #3b7751; background: rgba(79,145,104,.12); }
+.status-已闭环,.status-已通过,.status-已关闭,.status-已完成 { color: #3b7751; background: rgba(79,145,104,.12); }
 .status-已驳回,.status-逾期 { color: #ad4941; background: rgba(192,72,65,.11); }
 .status-待审批,.status-处置中 { color: #a64b2c; background: rgba(220,106,53,.12); }
 .status-持续观察,.status-观察中 { color: #4c6c9e; background: rgba(79,120,213,.11); }
@@ -1926,7 +1926,7 @@ button.operationProjectMetric:hover { border-color: rgba(220,106,53,.35); backgr
 
 .manager-riskKpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 14px; }
 .manager-riskKpis > button { min-height: 84px; display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 10px; padding: 13px 16px; border-radius: 14px; color: var(--text); text-align: left; cursor: pointer; }.manager-riskKpis > button.active { border-color: rgba(220,106,53,.35); background: rgba(255,247,242,.82); transform: translateY(-1px); }
-.riskDot { width: 9px; height: 9px; display: inline-block; border-radius: 50%; background: #5a84c6; box-shadow: 0 0 0 5px rgba(79,120,213,.08); }.riskDot.红色 { background: #c64f46; box-shadow: 0 0 0 5px rgba(198,79,70,.08); }.riskDot.橙色 { background: #dc743e; box-shadow: 0 0 0 5px rgba(220,116,62,.09); }.riskDot.黄色 { background: #d3a23b; box-shadow: 0 0 0 5px rgba(211,162,59,.09); }
+.riskDot { width: 9px; height: 9px; display: inline-block; border-radius: 50%; background: #5a84c6; box-shadow: 0 0 0 5px rgba(79,120,213,.08); }.riskDot.红色 { background: #c64f46; box-shadow: 0 0 0 5px rgba(198,79,70,.08); }.riskDot.橙色 { background: #dc743e; box-shadow: 0 0 0 5px rgba(220,116,62,.09); }.riskDot.黄色 { background: #d3a23b; box-shadow: 0 0 0 5px rgba(211,162,59,.09); }.riskDot.蓝色 { background: #4b7bc6; box-shadow: 0 0 0 5px rgba(75,123,198,.09); }
 .manager-riskKpis span strong,.manager-riskKpis span small { display: block; }.manager-riskKpis span strong { font-size: 22px; }.manager-riskKpis span small { margin-top: 3px; color: var(--muted); font-size: 10px; }.manager-riskKpis em { color: var(--muted); font-size: 10px; font-style: normal; }
 .manager-riskTable .manager-tableHead,
 .manager-riskTable > button { min-width: 930px; grid-template-columns: 35px minmax(230px,1.5fr) 90px 100px 65px 80px 85px; }
@@ -2041,3 +2041,49 @@ button.operationProjectMetric:hover { border-color: rgba(220,106,53,.35); backgr
   .importTypeGrid { grid-template-columns: 1fr; }
   .contractProjectHead { align-items: flex-start; flex-direction: column; }
 }
+
+/* 登录页 */
+.loginScreen { min-height: 100vh; display: grid; place-items: center; background:
+  radial-gradient(circle at 20% 15%, rgba(220,106,53,.10), transparent 45%),
+  radial-gradient(circle at 85% 80%, rgba(19,61,99,.10), transparent 45%), var(--ground, #f4f6f8); padding: 24px; }
+.loginCard { width: 100%; max-width: 400px; background: var(--surface, #fff); border: 1px solid var(--line-soft);
+  border-radius: 18px; box-shadow: 0 20px 48px rgba(30,41,51,.12); padding: 30px 30px 24px; }
+.loginBrand { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+.loginMark { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center;
+  background: linear-gradient(145deg, var(--accent, #dc6a35), #f0975a); color: #fff; font-weight: 800; font-size: 15px; }
+.loginBrand strong { display: block; font-size: 16px; }
+.loginBrand small { color: var(--muted); font-size: 12px; }
+.loginForm { display: flex; flex-direction: column; gap: 14px; }
+.loginForm label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.loginForm input { border: 1px solid var(--line-soft); border-radius: 9px; padding: 10px 12px; font-size: 14px;
+  background: var(--surface-2, #f7f8fa); color: inherit; }
+.loginForm input:focus { outline: 2px solid var(--accent, #dc6a35); outline-offset: 1px; }
+.loginError { display: flex; align-items: center; gap: 7px; color: #c4552d; font-size: 12.5px;
+  background: rgba(196,85,45,.09); border-radius: 8px; padding: 8px 10px; }
+.loginSubmit { margin-top: 4px; border: 0; border-radius: 9px; padding: 11px; font-size: 14px; font-weight: 700;
+  color: #fff; background: var(--accent, #dc6a35); cursor: pointer; }
+.loginSubmit:disabled { opacity: .55; cursor: not-allowed; }
+.loginDemo { margin-top: 22px; padding-top: 18px; border-top: 1px dashed var(--line-soft); }
+.loginDemoHead { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted);
+  letter-spacing: .04em; margin-bottom: 10px; }
+.loginDemoList { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.loginDemoList button { text-align: left; border: 1px solid var(--line-soft); background: var(--surface-2, #f7f8fa);
+  border-radius: 8px; padding: 7px 9px; cursor: pointer; color: inherit; }
+.loginDemoList button:hover { border-color: var(--accent, #dc6a35); }
+.loginDemoList strong { display: block; font-size: 11.5px; }
+.loginDemoList small { color: var(--muted); font-size: 10.5px; }
+.loginDemoHint { margin: 10px 0 0; font-size: 10.5px; color: var(--muted); }
+
+/* 顶部用户菜单：真实用户名 + 角色 + 退出登录 */
+.userMenuPanel { display: flex; flex-direction: column; }
+.userMenuHead { padding: 12px 14px; border-bottom: 1px solid var(--line-soft); }
+.userMenuHead strong { display: block; font-size: 13px; }
+.userMenuHead small { color: var(--muted); font-size: 11px; }
+.userMenuLogout { color: #c4552d !important; }
+
+/* 权限不足时的禁用态提示 */
+.permDisabledHint { font-size: 11px; color: var(--muted); }
+
+.manager-createForm { display: flex; flex-direction: column; gap: 12px; }
+.manager-createForm label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.manager-createForm input, .manager-createForm select { border: 1px solid var(--line-soft); border-radius: 8px; padding: 8px 10px; font-size: 13px; background: var(--surface-2, #f7f8fa); color: inherit; }

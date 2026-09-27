@@ -1,5 +1,9 @@
 import React from 'react'
-import { getOperations, getProjectOperations, getTenantMix, getAdjustmentPlan, resolveProjectIdByName } from './api'
+import {
+  getOperations, getProjectOperations, getTenantMix, getAdjustmentPlan,
+  resolveProjectIdByName, fmtWan, fmtPct, fmtAreaWan,
+} from './api'
+import { AppDataProvider, useAppData } from './data'
 import ProjectLayoutSandbox from './ProjectLayoutSandbox'
 import ManagementCenter from './ManagementCenter'
 import {
@@ -178,6 +182,7 @@ function Logo() {
 }
 
 function SideNav({ current, onNavigate }) {
+  const { user, logout } = useAppData()
   const [panel, setPanel] = React.useState('')
   const actionsRef = React.useRef(null)
   React.useEffect(() => setPanel(''), [current])
@@ -205,7 +210,7 @@ function SideNav({ current, onNavigate }) {
       <button type="button" aria-label="系统配置" title="系统配置" className={`navItem ${current === 'settings' ? 'active' : ''}`} onClick={() => onNavigate('settings')}><Settings2 size={19} /><span>系统配置</span></button>
       <div className="topActions globalActions" ref={actionsRef}>
         <div className="topPopoverWrap"><button type="button" className="iconButton" aria-label="通知" aria-expanded={panel === 'notice'} onClick={() => setPanel(panel === 'notice' ? '' : 'notice')}><Bell size={19} /><span className="notificationDot" /></button>{panel === 'notice' && <div className="topPopover noticePopover"><strong>待处理通知</strong><button type="button" onClick={() => { onNavigate('matching'); setPanel('') }}>12 个品牌匹配结果待研判 <ArrowRight size={13} /></button><button type="button" onClick={() => { onNavigate('followup'); setPanel('') }}>5 项候选跟进即将到期 <ArrowRight size={13} /></button></div>}</div>
-        <div className="topPopoverWrap"><button type="button" className="user" aria-expanded={panel === 'user'} onClick={() => setPanel(panel === 'user' ? '' : 'user')}><CircleUserRound size={31} /><div><strong>唐好</strong><small>系统管理员</small></div><ChevronDown size={15} /></button>{panel === 'user' && <div className="topPopover userPopover"><button type="button" onClick={() => { onNavigate('settings'); setPanel('') }}>账户与权限设置</button><button type="button" onClick={() => { onNavigate('import'); setPanel('') }}>数据导入中心</button></div>}</div>
+        <div className="topPopoverWrap"><button type="button" className="user" aria-expanded={panel === 'user'} onClick={() => setPanel(panel === 'user' ? '' : 'user')}><CircleUserRound size={31} /><div><strong>{user?.display_name || user?.username}</strong><small>{user?.role_label || user?.role}</small></div><ChevronDown size={15} /></button>{panel === 'user' && <div className="topPopover userPopover userMenuPanel"><div className="userMenuHead"><strong>{user?.display_name || user?.username}</strong><small>@{user?.username} · {user?.role_label}</small></div><button type="button" onClick={() => { onNavigate('settings'); setPanel('') }}>账户与权限设置</button><button type="button" onClick={() => { onNavigate('import'); setPanel('') }}>数据导入中心</button><button type="button" className="userMenuLogout" onClick={() => { setPanel(''); logout() }}>退出登录</button></div>}</div>
       </div>
     </div>
     <div className="sidebarFoot"><span className="statusDot" />UI 原型 · 演示数据</div>
@@ -449,67 +454,77 @@ function DataDetailTable({ columns, rows, note }) {
 }
 
 function DashboardPage({ onNavigate }) {
-  const [selected, setSelected] = React.useState(projects[0])
+  const { projects, brands, ops, risk } = useAppData()
+  const [selected, setSelected] = React.useState(null)
   const [filters, setFilters] = React.useState({ city: '重庆市', type: '全部类型', status: '全部状态' })
   const [detailKey, setDetailKey] = React.useState('')
   const filteredProjects = React.useMemo(() => projects.filter((project) =>
     (filters.type === '全部类型' || project.type === filters.type) &&
     (filters.status === '全部状态' || project.status === filters.status)
-  ), [filters])
+  ), [filters, projects])
   React.useEffect(() => {
-    if (filteredProjects.length && !filteredProjects.some((project) => project.id === selected.id)) setSelected(filteredProjects[0])
-  }, [filteredProjects, selected.id])
+    if (filteredProjects.length && (!selected || !filteredProjects.some((project) => project.id === selected.id))) {
+      setSelected(filteredProjects[0])
+    }
+  }, [filteredProjects, selected])
+  const kpi = ops?.kpi
   const dashboardDetails = {
-    projects: { title: '在管项目明细', subtitle: '项目总数 28', columns: ['项目名称', '项目类型', '经营面积', '出租率', '本月收入', '本月成本'], rows: projects.map((item) => [item.name, item.type, item.area, item.occupancy, item.revenue, item.cost]), note: '已展示数据库中的全部 28 个在管项目；经营指标为界面示例口径。' },
-    brands: { title: '品牌资源明细', subtitle: '品牌资源总数 128', columns: ['品牌名称', '一级业态', '二级业态', '三级业态', '面积需求', '工程条件'], rows: brands.map((item) => [item.name, item.level1, item.level2, item.level3, item.area, item.engineering]), note: '品牌资源按资产方拓店条件统计。' },
-    occupancy: { title: '项目出租率明细', subtitle: '综合出租率 86.4%', columns: ['项目名称', '经营面积', '综合出租率', '租金收缴率'], rows: projects.map((item) => [item.name, item.area, item.occupancy, item.collection]), note: '综合出租率按可租赁面积加权计算。' },
-    revenue: { title: '项目经营收支明细', subtitle: '本月经营收入 2,486 万元', columns: ['项目名称', '本月收入', '本月成本', '租金收缴率'], rows: projects.map((item) => [item.name, item.revenue, item.cost, item.collection]), note: '当前为界面演示数据，正式版本以经营台账汇总口径为准。' },
-    noi: { title: '经营净收益明细', subtitle: '本月 NOI 1,023 万元', columns: ['项目名称', '经营收入', '经营成本', '经营净收益', '预算达成'], rows: projects.slice(0, 8).map((item, index) => [item.name, item.revenue, item.cost, `${Math.max(18, 82 + index * 13)}万元`, `${94 + (index % 4) * 1.3}%`]), note: '经营净收益为演示口径，正式版本由收入台账扣除可归集经营成本后生成。' },
-    collection: { title: '租金收缴明细', subtitle: '本月综合收缴率 96.4%', columns: ['项目名称', '应收租金', '实收租金', '收缴率', '责任人'], rows: projects.slice(0, 10).map((item, index) => [item.name, `${118 + index * 17}万元`, `${112 + index * 16}万元`, item.collection, item.owner]), note: '点击经营中心可继续查看到租户与账期明细。' },
+    projects: { title: '在管项目明细', subtitle: `项目总数 ${projects.length}`, columns: ['项目名称', '项目类型', '经营面积', '出租率', '本期实收', '本期成本'], rows: projects.map((item) => [item.name, item.type, item.area, item.occupancy, item.revenue, item.cost]), note: `已展示全部 ${projects.length} 个在管项目；出租率/收支来自经营台账实时口径。` },
+    brands: { title: '品牌资源明细', subtitle: `品牌资源总数 ${brands.length}`, columns: ['品牌名称', '一级业态', '二级业态', '三级业态', '面积需求', '工程条件'], rows: brands.map((item) => [item.name, item.level1, item.level2, item.level3, item.area, item.engineering]), note: '品牌资源按资产方拓店条件统计。' },
+    occupancy: { title: '项目出租率明细', subtitle: `组合出租率 ${fmtPct(kpi?.occupancy_rate)}`, columns: ['项目名称', '经营面积', '出租率', '租金收缴率'], rows: projects.map((item) => [item.name, item.area, item.occupancy, item.collection]), note: '出租率 =（在租+自营）铺位数 / 铺位总数，按项目经营台账实时计算。' },
+    revenue: { title: '项目经营收支明细', subtitle: `本期实收合计 ${fmtWan(kpi?.revenue_received)}`, columns: ['项目名称', '本期实收', '本期成本', '租金收缴率'], rows: projects.map((item) => [item.name, item.revenue, item.cost, item.collection]), note: '实收/成本均为经营台账现金口径实时汇总。' },
+    noi: { title: '经营净收益明细', subtitle: `本期 NOI ${fmtWan(kpi?.noi)}`, columns: ['项目名称', '本期实收', '本期成本', '经营净收益 NOI'], rows: projects.filter((p) => p.noi != null).sort((a, b) => b.noi - a.noi).map((item) => [item.name, item.revenue, item.cost, fmtWan(item.noi)]), note: 'NOI = 实收收入 − 经营成本；按项目排序，越靠前贡献越大。' },
+    collection: { title: '租金收缴明细', subtitle: `综合收缴率 ${fmtPct(kpi?.collect_rate)}`, columns: ['项目名称', '收缴率', '欠租金额', '负责人'], rows: projects.filter((p) => p.arrears != null).sort((a, b) => b.arrears - a.arrears).map((item) => [item.name, item.collection, fmtWan(item.arrears), item.owner]), note: '按欠租金额从高到低排序，用于优先跟进。' },
   }
   const activeDetail = dashboardDetails[detailKey]
+  const riskFocus = risk ? [
+    ...risk.arrears_top.slice(0, 2).map((r) => ({ tone: 'warning', title: `${r.project_name} 存在欠租`, meta: `欠租 ${fmtWan(r.arrears)} · 建议跟进催收` })),
+    ...risk.expiring_leases.slice(0, 2).map((e) => ({ tone: e.days_left <= 30 ? 'critical' : 'warning', title: `${e.project_name} · ${e.tenant} 租约将到期`, meta: `${e.days_left} 天后到期(${e.lease_end}) · 月租 ${fmtWan(e.monthly_rent)}` })),
+  ] : []
+  if (!projects.length) return <div className="pageContent dashboardPage"><EmptyState text="正在加载真实经营数据…" /></div>
   return <div className="pageContent dashboardPage dashboardMapPage">
     <section className="cockpit-commandBar">
-      <div><span>集团经营快照 · 2026年9月</span><strong>整体经营平稳，3 项偏差需要本周决策</strong><small>演示口径 · 最近更新 14:30</small></div>
+      <div><span>集团经营快照</span><strong>{kpi ? `${projects.length} 个项目 · 组合出租率 ${fmtPct(kpi.occupancy_rate)}` : '经营台账加载中'}</strong><small>实时数据 · 来自经营台账聚合</small></div>
       <div className="cockpit-commandMetrics">
-        <button onClick={() => setDetailKey('revenue')}><span>年度收入达成</span><strong>76.2%</strong><small className="up">同比 +8.4%</small></button>
-        <button onClick={() => setDetailKey('noi')}><span>本月 NOI</span><strong>1,023万</strong><small className="up">预算达成 98.6%</small></button>
-        <button onClick={() => setDetailKey('collection')}><span>租金收缴率</span><strong>96.4%</strong><small>目标 97.0%</small></button>
-        <button onClick={() => onNavigate('management')}><span>管理待办</span><strong>6项</strong><small className="warn">含 1 项红色预警</small></button>
+        <button onClick={() => setDetailKey('occupancy')}><span>组合出租率</span><strong>{fmtPct(kpi?.occupancy_rate)}</strong><small>{kpi?.unit_total ?? '—'} 个铺位</small></button>
+        <button onClick={() => setDetailKey('noi')}><span>本期 NOI</span><strong>{fmtWan(kpi?.noi)}</strong><small>实收 − 成本</small></button>
+        <button onClick={() => setDetailKey('collection')}><span>租金收缴率</span><strong>{fmtPct(kpi?.collect_rate)}</strong><small>欠租 {fmtWan(kpi?.arrears)}</small></button>
+        <button onClick={() => onNavigate('management')}><span>待处理风险</span><strong>{(risk?.summary.projects_with_arrears || 0) + (risk?.summary.expiring_lease_count || 0)}项</strong><small className={risk?.summary.expiring_lease_count ? 'warn' : ''}>欠租+90天内到期租约</small></button>
       </div>
       <button className="cockpit-manageEntry" onClick={() => onNavigate('management')}>进入管理中心 <ArrowRight size={15} /></button>
     </section>
     <section className="dashboardOperatingLayout">
       <div className="dashboardMapHero">
-        <DemoMap selected={selected} onSelect={setSelected} items={filteredProjects} />
+        <DemoMap selected={selected || filteredProjects[0]} onSelect={setSelected} items={filteredProjects} />
         <div className="dashboardFilterGroup dashboardMapFilters">
           <GlassSelect label="城市" value={filters.city} onChange={(city) => setFilters({ ...filters, city })} options={['重庆市', '全部城市']} />
           <GlassSelect label="项目类型" value={filters.type} onChange={(type) => setFilters({ ...filters, type })} options={['全部类型', '体育场馆商业', '购物中心', '商业街区', '社区商业', '文旅商业', '写字楼或公寓配套']} />
           <GlassSelect label="项目状态" value={filters.status} onChange={(status) => setFilters({ ...filters, status })} options={['全部状态', '筹备', '招商中', '已开业']} />
         </div>
-        <aside className="dashboardMapSelection">
+        {selected && <aside className="dashboardMapSelection">
           <div className="dashboardSelectionHead"><div><span>当前项目</span><h3>{selected.name}</h3><p>{selected.type} · {selected.status}</p></div><i className={`grade grade${selected.grade}`}>{selected.grade}</i></div>
-          <div className="dashboardSelectionFacts"><div><span>经营面积</span><strong>{selected.area}</strong></div><div><span>出租率</span><strong>{selected.occupancy}</strong></div><div><span>本月收入</span><strong>{selected.revenue}</strong></div></div>
+          <div className="dashboardSelectionFacts"><div><span>经营面积</span><strong>{selected.area}</strong></div><div><span>出租率</span><strong>{selected.occupancy}</strong></div><div><span>本期实收</span><strong>{selected.revenue}</strong></div></div>
           <button onClick={() => onNavigate('map')}>查看项目地图详情 <ArrowRight size={14} /></button>
-        </aside>
+        </aside>}
       </div>
       <div className="dashboardMetricVisuals" aria-label="核心经营指标">
-        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('projects')}><div className="metricVisualHead"><span>在管项目</span><small>资产经营管理范围</small></div><div className="metricVisualBody"><strong>28<em>个</em></strong><div className="projectBars"><i /><i /><i /><i /></div></div><p>年度新增 2 个项目</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
-        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('noi')}><div className="metricVisualHead"><span>经营净收益 NOI</span><small>收入扣除经营成本</small></div><div className="metricVisualBody"><strong>1,023<em>万元</em></strong><div className="brandStack"><i /><i /><i /></div></div><p>环比 +4.6% · 预算达成 98.6%</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
-        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('occupancy')}><div className="metricVisualHead"><span>综合出租率</span><small>按可租面积加权</small></div><div className="metricVisualBody"><strong>86.4<em>%</em></strong><div className="occupancyRing"><span>86%</span></div></div><p>已出租 26.9 万㎡</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
-        <button type="button" className="metricVisualCard revenueMetric" onClick={() => setDetailKey('collection')}><div className="metricVisualHead"><span>租金收缴率</span><small>截至 9月5日</small></div><div className="metricVisualBody"><strong>96.4<em>%</em></strong><svg viewBox="0 0 130 48" aria-label="租金收缴走势"><path d="M3 41 C20 39 23 30 38 31 S59 25 72 27 S93 15 104 17 S118 9 127 6" /></svg></div><p>距离月度目标还差 0.6 个百分点</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
+        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('projects')}><div className="metricVisualHead"><span>在管项目</span><small>资产经营管理范围</small></div><div className="metricVisualBody"><strong>{projects.length}<em>个</em></strong><div className="projectBars"><i /><i /><i /><i /></div></div><p>品牌资源 {brands.length} 个</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
+        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('noi')}><div className="metricVisualHead"><span>经营净收益 NOI</span><small>实收扣除经营成本</small></div><div className="metricVisualBody"><strong>{fmtWan(kpi?.noi)}</strong><div className="brandStack"><i /><i /><i /></div></div><p>实收 {fmtWan(kpi?.revenue_received)} · 成本 {fmtWan(kpi?.cost)}</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
+        <button type="button" className="metricVisualCard" onClick={() => setDetailKey('occupancy')}><div className="metricVisualHead"><span>组合出租率</span><small>按铺位数计算</small></div><div className="metricVisualBody"><strong>{fmtPct(kpi?.occupancy_rate)}</strong><div className="occupancyRing"><span>{kpi ? Math.round(kpi.occupancy_rate * 100) : 0}%</span></div></div><p>{kpi?.unit_total ?? '—'} 个铺位</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
+        <button type="button" className="metricVisualCard revenueMetric" onClick={() => setDetailKey('collection')}><div className="metricVisualHead"><span>租金收缴率</span><small>实收 / 应收</small></div><div className="metricVisualBody"><strong>{fmtPct(kpi?.collect_rate)}</strong></div><p>欠租合计 {fmtWan(kpi?.arrears)}</p><span className="metricLink">查看明细 <ArrowRight size={13} /></span></button>
       </div>
     </section>
     <section className="cockpit-decisionGrid">
-      <div className="panel cockpit-focusPanel"><SectionTitle title="本周管理焦点" meta="风险与经营偏差自动汇总" action={<button className="textAction" onClick={() => onNavigate('management')}>查看全部 <ArrowRight size={14} /></button>} /><button onClick={() => onNavigate('management')}><i className="critical" /><span><strong>社区药房退租交接逾期</strong><small>江北嘴网球馆 · 逾期 9 天 · 李然负责</small></span><em>红色预警</em></button><button onClick={() => onNavigate('management')}><i className="warning" /><span><strong>足球场出租率低于月度目标</strong><small>当前 82.6% · 偏差 -5.4pt · 陈昱负责</small></span><em>处置中</em></button><button onClick={() => onNavigate('management')}><i className="warning" /><span><strong>悦荟城两户租金未按期到账</strong><small>未收 18.6 万元 · 预计 9月12日完成</small></span><em>待跟进</em></button></div>
-      <div className="panel cockpit-approvalPanel"><SectionTitle title="待审批与待验收" meta="需要管理者决策的事项" /><button onClick={() => onNavigate('management')}><span><strong>超级猩猩商务条件审批</strong><small>年租金 223.2 万元 · 今天 09:42</small></span><em>待审批</em><ArrowRight size={14} /></button><button onClick={() => onNavigate('management')}><span><strong>悦荟城中庭调改预算追加</strong><small>追加 38 万元 · 昨天 16:18</small></span><em>待审批</em><ArrowRight size={14} /></button><button onClick={() => onNavigate('management')}><span><strong>悦荟城租金收缴提升</strong><small>收缴率已提升至 97.8%</small></span><em>待验收</em><ArrowRight size={14} /></button></div>
+      <div className="panel cockpit-focusPanel"><SectionTitle title="经营风险焦点" meta="欠租 / 临期租约自动汇总" action={<button className="textAction" onClick={() => onNavigate('management')}>查看全部 <ArrowRight size={14} /></button>} />{riskFocus.length ? riskFocus.map((item, i) => <button key={i} onClick={() => onNavigate('management')}><i className={item.tone} /><span><strong>{item.title}</strong><small>{item.meta}</small></span><em>{item.tone === 'critical' ? '需尽快处理' : '关注中'}</em></button>) : <p className="permDisabledHint" style={{ padding: '14px 18px' }}>暂无欠租或临期租约风险。</p>}</div>
+      <div className="panel cockpit-approvalPanel"><SectionTitle title="空置铺位 Top" meta="按空置面积排序，招商优先级参考" />{risk?.vacant_top.length ? risk.vacant_top.slice(0, 3).map((v) => <button key={v.project_id} onClick={() => onNavigate('projects')}><span><strong>{v.project_name}</strong><small>空置 {v.vacant_units} 个铺位 · {Math.round(v.vacant_area)}㎡</small></span><ArrowRight size={14} /></button>) : <p className="permDisabledHint" style={{ padding: '14px 18px' }}>暂无空置铺位数据。</p>}</div>
     </section>
     {activeDetail && <GlassDialog title={activeDetail.title} subtitle={activeDetail.subtitle} onClose={() => setDetailKey('')} wide actions={<button type="button" className="primaryAction" onClick={() => setDetailKey('')}>关闭</button>}><DataDetailTable columns={activeDetail.columns} rows={activeDetail.rows} note={activeDetail.note} /></GlassDialog>}
   </div>
 }
 
 function MapPage({ onNavigate }) {
-  const [selected, setSelected] = React.useState(projects[0])
+  const { projects, ops } = useAppData()
+  const [selected, setSelected] = React.useState(null)
   const [filters, setFilters] = React.useState({ query: '', city: '重庆市', type: '全部类型', status: '全部状态', grade: '全部等级' })
   const [view, setView] = React.useState('分屏')
   const [advanced, setAdvanced] = React.useState(false)
@@ -519,30 +534,35 @@ function MapPage({ onNavigate }) {
     (filters.type === '全部类型' || project.type === filters.type) &&
     (filters.status === '全部状态' || project.status === filters.status) &&
     (filters.grade === '全部等级' || project.grade === filters.grade)
-  ), [filters])
+  ), [filters, projects])
   React.useEffect(() => {
-    if (filteredProjects.length && !filteredProjects.some((project) => project.id === selected.id)) {
+    if (filteredProjects.length && (!selected || !filteredProjects.some((project) => project.id === selected.id))) {
       setSelected(filteredProjects[0])
     }
-  }, [filteredProjects, selected.id])
+  }, [filteredProjects, selected])
+  const kpi = ops?.kpi
+  const totalArea = projects.reduce((s, p) => s + (p.areaM2 || 0), 0)
+  if (!projects.length) return <div className="pageContent"><section className="panel"><EmptyState text="正在加载项目数据…" /></section></div>
   return <>
     <section className="overviewStrip">
-      <Stat value="28" label="项目总数" meta="全部在管项目" />
-      <Stat value="48.6万㎡" label="总经营面积" meta="资产经营口径" tone="cyan" />
-      <Stat value="31.2万㎡" label="可租赁面积" meta="可经营铺位面积" />
-      <Stat value="26.9万㎡" label="已出租面积" meta="当前有效合同" tone="orange" />
-      <div className="coverage"><div><strong>86.4%</strong><span>综合出租率</span></div><div className="progress"><i style={{ width: '86.4%' }} /></div><small>按可租赁面积加权统计</small></div>
+      <Stat value={String(projects.length)} label="项目总数" meta="全部在管项目" />
+      <Stat value={fmtAreaWan(totalArea)} label="总经营面积" meta="资产经营口径" tone="cyan" />
+      <Stat value={fmtAreaWan(kpi?.area_total)} label="可租赁面积" meta="可经营铺位面积" />
+      <Stat value={fmtAreaWan(kpi?.area_rented)} label="已出租面积" meta="当前有效合同" tone="orange" />
+      <div className="coverage"><div><strong>{fmtPct(kpi?.area_occupancy_rate)}</strong><span>综合出租率</span></div><div className="progress"><i style={{ width: fmtPct(kpi?.area_occupancy_rate) }} /></div><small>按可租赁面积加权统计</small></div>
     </section>
     <FilterBar filters={filters} onFiltersChange={setFilters} view={view} onViewChange={setView} advanced={advanced} onAdvancedChange={setAdvanced} />
     {advanced && <AdvancedFilterPanel onClose={() => setAdvanced(false)} onReset={() => setFilters({ query: '', city: '重庆市', type: '全部类型', status: '全部状态', grade: '全部等级' })}><label className="advancedFilterField"><span>项目等级</span><GlassSelect label="项目等级" value={filters.grade} onChange={(grade) => setFilters({ ...filters, grade })} options={['全部等级', 'A', 'B', 'C']} /></label></AdvancedFilterPanel>}
-    {filteredProjects.length === 0 ? <div className="pageContent"><section className="panel"><EmptyState /></section></div> : view === '列表' ? <div className="mapListView" role="table" aria-label="项目资源列表"><div className="mapListHeader" role="row"><span role="columnheader">等级</span><span role="columnheader">项目名称</span><span role="columnheader">商业体量</span><span role="columnheader">负责人</span><span role="columnheader">操作</span></div>{filteredProjects.map((project) => <button type="button" key={project.id} className={`mapListRow ${selected.id === project.id ? 'selected' : ''}`} aria-label={`打开${project.name}项目档案`} onClick={() => { setSelected(project); setArchiveOpen(true) }}><span className={`grade grade${project.grade}`}>{project.grade}</span><div><strong>{project.name}</strong><small>{project.type} · {project.status}</small></div><span>{project.area}</span><span>{project.owner}</span><span className="rowAction">查看 <ArrowRight size={14} /></span></button>)}</div> : view === '地图' ? <div className="mapOnlyLayout"><DemoMap selected={selected} onSelect={setSelected} items={filteredProjects} /></div> : <div className="mapLayout"><DemoMap selected={selected} onSelect={setSelected} items={filteredProjects} /><DetailCard project={selected} onMatch={() => onNavigate('matching')} onOpen={() => setArchiveOpen(true)} /></div>}
-    {archiveOpen && <GlassDialog title={selected.name} subtitle="项目完整档案" onClose={() => setArchiveOpen(false)} wide actions={<><button type="button" onClick={() => setArchiveOpen(false)}>关闭</button><button type="button" className="primaryAction" onClick={() => { setArchiveOpen(false); onNavigate('matching') }}>进入匹配工作台</button></>}><ProjectArchive project={selected} /></GlassDialog>}
+    {filteredProjects.length === 0 || !selected ? <div className="pageContent"><section className="panel"><EmptyState /></section></div> : view === '列表' ? <div className="mapListView" role="table" aria-label="项目资源列表"><div className="mapListHeader" role="row"><span role="columnheader">等级</span><span role="columnheader">项目名称</span><span role="columnheader">商业体量</span><span role="columnheader">负责人</span><span role="columnheader">操作</span></div>{filteredProjects.map((project) => <button type="button" key={project.id} className={`mapListRow ${selected.id === project.id ? 'selected' : ''}`} aria-label={`打开${project.name}项目档案`} onClick={() => { setSelected(project); setArchiveOpen(true) }}><span className={`grade grade${project.grade}`}>{project.grade}</span><div><strong>{project.name}</strong><small>{project.type} · {project.status}</small></div><span>{project.area}</span><span>{project.owner}</span><span className="rowAction">查看 <ArrowRight size={14} /></span></button>)}</div> : view === '地图' ? <div className="mapOnlyLayout"><DemoMap selected={selected} onSelect={setSelected} items={filteredProjects} /></div> : <div className="mapLayout"><DemoMap selected={selected} onSelect={setSelected} items={filteredProjects} /><DetailCard project={selected} onMatch={() => onNavigate('matching')} onOpen={() => setArchiveOpen(true)} /></div>}
+    {archiveOpen && selected && <GlassDialog title={selected.name} subtitle="项目完整档案" onClose={() => setArchiveOpen(false)} wide actions={<><button type="button" onClick={() => setArchiveOpen(false)}>关闭</button><button type="button" className="primaryAction" onClick={() => { setArchiveOpen(false); onNavigate('matching') }}>进入匹配工作台</button></>}><ProjectArchive project={selected} /></GlassDialog>}
   </>
 }
 
 function BrandsPage({ onNavigate, notify }) {
+  const { brands, can } = useAppData()
   const [brandList, setBrandList] = React.useState(brands)
-  const [selected, setSelected] = React.useState(brands[0])
+  const [selected, setSelected] = React.useState(null)
+  React.useEffect(() => { setBrandList(brands) }, [brands])
   const [queryDraft, setQueryDraft] = React.useState('')
   const [query, setQuery] = React.useState('')
   const [category, setCategory] = React.useState('全部业态')
@@ -559,8 +579,10 @@ function BrandsPage({ onNavigate, notify }) {
     (intent === '全部意愿' || brand.intent === intent)
   )
   React.useEffect(() => {
-    if (visibleBrands.length && !visibleBrands.some((brand) => brand.code === selected.code)) setSelected(visibleBrands[0])
-  }, [visibleBrands, selected.code])
+    if (visibleBrands.length && (!selected || !visibleBrands.some((brand) => brand.code === selected.code))) {
+      setSelected(visibleBrands[0])
+    }
+  }, [visibleBrands, selected])
   const createBrand = (event) => {
     event.preventDefault()
     const brand = { ...form, category: `${form.level1} · ${form.level2}`, code: `XS-BRD-${String(brandList.length + 1).padStart(4, '0')}`, tags: ['新建品牌', form.level1] }
@@ -570,14 +592,14 @@ function BrandsPage({ onNavigate, notify }) {
     notify(`品牌“${brand.name}”已加入当前清单`)
   }
   return <div className="pageContent resourcePage">
-    <div className="actionBar"><form className="searchBox submitSearchBox" role="search" onSubmit={(event) => { event.preventDefault(); setQuery(queryDraft.trim()) }}><Search size={17} /><input aria-label="搜索品牌" value={queryDraft} onChange={(e) => setQueryDraft(e.target.value)} placeholder="搜索品牌名称、业态或拓店条件" /><button type="submit" className="searchSubmit">搜索</button></form><GlassSelect label="一级业态" value={category} onChange={setCategory} options={['全部业态', '零售', '餐饮', '文体娱乐', '生活服务']} /><GlassSelect label="品牌等级" value={grade} onChange={setGrade} options={['全部等级', 'A', 'B', 'C']} /><button type="button" className={showAdvanced ? 'activeFilterButton' : ''} onClick={() => setShowAdvanced(!showAdvanced)}><Filter size={16} />更多筛选</button><button className="primaryAction" type="button" onClick={() => setCreateOpen(true)}><Plus size={16} />新建品牌</button></div>
+    <div className="actionBar"><form className="searchBox submitSearchBox" role="search" onSubmit={(event) => { event.preventDefault(); setQuery(queryDraft.trim()) }}><Search size={17} /><input aria-label="搜索品牌" value={queryDraft} onChange={(e) => setQueryDraft(e.target.value)} placeholder="搜索品牌名称、业态或拓店条件" /><button type="submit" className="searchSubmit">搜索</button></form><GlassSelect label="一级业态" value={category} onChange={setCategory} options={['全部业态', '零售', '餐饮', '文体娱乐', '生活服务']} /><GlassSelect label="品牌等级" value={grade} onChange={setGrade} options={['全部等级', 'A', 'B', 'C']} /><button type="button" className={showAdvanced ? 'activeFilterButton' : ''} onClick={() => setShowAdvanced(!showAdvanced)}><Filter size={16} />更多筛选</button>{can('brand:write') && <button className="primaryAction" type="button" onClick={() => setCreateOpen(true)}><Plus size={16} />新建品牌</button>}</div>
     {showAdvanced && <AdvancedFilterPanel className="inPage" onClose={() => setShowAdvanced(false)} onReset={() => { setQueryDraft(''); setQuery(''); setCategory('全部业态'); setGrade('全部等级'); setIntent('全部意愿') }}><label className="advancedFilterField"><span>合作意愿</span><GlassSelect label="合作意愿" value={intent} onChange={setIntent} options={['全部意愿', '强', '较强', '一般']} /></label></AdvancedFilterPanel>}
     <div className="resourceLayout brandResourceLayout">
-      <section className="panel tablePanel"><SectionTitle title="品牌拓店需求清单" meta={`当前显示 ${visibleBrands.length} 个品牌`} /><div className="dataTable brandTable"><div className="tableHeader"><span>品牌</span><span>一级业态</span><span>二级业态</span><span>三级业态</span><span>面积需求</span><span>工程条件</span><span>物业偏好</span><span>开店计划</span><span>操作</span></div>{visibleBrands.map((b) => <button type="button" aria-label={`查看${b.name}拓店需求`} className={`tableRow ${selected.code === b.code ? 'selected' : ''}`} key={b.code} onClick={() => setSelected(b)}><span className="nameCell"><i>{b.name[0]}</i><span><strong>{b.name}</strong><small>{b.code}</small></span></span><span>{b.level1}</span><span>{b.level2}</span><span>{b.level3}</span><span>{b.area}</span><span className="conditionCell">{b.engineering}</span><span className="conditionCell">{b.property}</span><span>{b.opening}</span><span className="rowAction">查看 <ArrowRight size={14} /></span></button>)}{visibleBrands.length === 0 && <EmptyState />}</div></section>
-      <aside className="panel profilePanel"><div className="profileTop"><div className="profileLogo">{selected.name[0]}</div><div><span>{selected.code}</span><h2>{selected.name}</h2><p>{selected.level1} · {selected.level2} · {selected.level3}</p></div><i className={`grade grade${selected.grade}`}>{selected.grade}</i></div><div className="tagCloud">{selected.tags.map(t => <span key={t}>{t}</span>)}</div><div className="profileStats"><div><span>面积需求</span><strong>{selected.area}</strong></div><div><span>开店计划</span><strong>{selected.opening}</strong></div><div><span>合作意愿</span><strong className="positive">{selected.intent}</strong></div></div><div className="profileSection"><h3>资产适配条件</h3><dl><div><dt>工程条件</dt><dd>{selected.engineering}</dd></div><div><dt>物业偏好</dt><dd>{selected.property}</dd></div><div><dt>面积区间</dt><dd>{selected.area}</dd></div><div><dt>开店周期</dt><dd>{selected.opening}</dd></div></dl></div><div className="profileSection"><h3>最近沟通</h3><p className="recordText">9月5日 · 已确认拓店需求，等待匹配适配铺位与工程条件。</p></div><div className="cardActions"><button type="button" className="primary" onClick={() => setArchiveOpen(true)}>打开品牌档案</button><button type="button" onClick={() => onNavigate('matching')}>查看推荐项目</button></div></aside>
+      <section className="panel tablePanel"><SectionTitle title="品牌拓店需求清单" meta={`当前显示 ${visibleBrands.length} 个品牌`} /><div className="dataTable brandTable"><div className="tableHeader"><span>品牌</span><span>一级业态</span><span>二级业态</span><span>三级业态</span><span>面积需求</span><span>工程条件</span><span>物业偏好</span><span>开店计划</span><span>操作</span></div>{visibleBrands.map((b) => <button type="button" aria-label={`查看${b.name}拓店需求`} className={`tableRow ${selected?.code === b.code ? 'selected' : ''}`} key={b.code} onClick={() => setSelected(b)}><span className="nameCell"><i>{b.name[0]}</i><span><strong>{b.name}</strong><small>{b.code}</small></span></span><span>{b.level1}</span><span>{b.level2}</span><span>{b.level3}</span><span>{b.area}</span><span className="conditionCell">{b.engineering}</span><span className="conditionCell">{b.property}</span><span>{b.opening}</span><span className="rowAction">查看 <ArrowRight size={14} /></span></button>)}{visibleBrands.length === 0 && <EmptyState />}</div></section>
+      {selected && <aside className="panel profilePanel"><div className="profileTop"><div className="profileLogo">{selected.name[0]}</div><div><span>{selected.code}</span><h2>{selected.name}</h2><p>{selected.level1} · {selected.level2} · {selected.level3}</p></div><i className={`grade grade${selected.grade}`}>{selected.grade}</i></div><div className="tagCloud">{selected.tags.map(t => <span key={t}>{t}</span>)}</div><div className="profileStats"><div><span>面积需求</span><strong>{selected.area}</strong></div><div><span>开店计划</span><strong>{selected.opening}</strong></div><div><span>合作意愿</span><strong className="positive">{selected.intent}</strong></div></div><div className="profileSection"><h3>资产适配条件</h3><dl><div><dt>工程条件</dt><dd>{selected.engineering}</dd></div><div><dt>物业偏好</dt><dd>{selected.property}</dd></div><div><dt>面积区间</dt><dd>{selected.area}</dd></div><div><dt>开店周期</dt><dd>{selected.opening}</dd></div></dl></div><div className="profileSection"><h3>最近沟通</h3><p className="recordText">9月5日 · 已确认拓店需求，等待匹配适配铺位与工程条件。</p></div><div className="cardActions"><button type="button" className="primary" onClick={() => setArchiveOpen(true)}>打开品牌档案</button><button type="button" onClick={() => onNavigate('matching')}>查看推荐项目</button></div></aside>}
     </div>
     {createOpen && <GlassDialog title="新建品牌" subtitle="录入品牌拓店与资产适配条件" onClose={() => setCreateOpen(false)} actions={<><button type="button" onClick={() => setCreateOpen(false)}>取消</button><button type="submit" form="brand-create-form" className="primaryAction">保存品牌</button></>}><form id="brand-create-form" className="dialogForm" onSubmit={createBrand}><DialogField label="品牌名称" full><input required autoFocus value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="请输入品牌名称" /></DialogField><DialogField label="一级业态"><select value={form.level1} onChange={(event) => setForm({ ...form, level1: event.target.value })}><option>零售</option><option>餐饮</option><option>文体娱乐</option><option>生活服务</option></select></DialogField><DialogField label="二级业态"><input required value={form.level2} onChange={(event) => setForm({ ...form, level2: event.target.value })} /></DialogField><DialogField label="三级业态"><input required value={form.level3} onChange={(event) => setForm({ ...form, level3: event.target.value })} /></DialogField><DialogField label="品牌等级"><select value={form.grade} onChange={(event) => setForm({ ...form, grade: event.target.value })}><option>A</option><option>B</option><option>C</option></select></DialogField><DialogField label="合作意愿"><select value={form.intent} onChange={(event) => setForm({ ...form, intent: event.target.value })}><option>强</option><option>较强</option><option>一般</option></select></DialogField><DialogField label="面积需求"><input value={form.area} onChange={(event) => setForm({ ...form, area: event.target.value })} /></DialogField><DialogField label="开店计划"><input value={form.opening} onChange={(event) => setForm({ ...form, opening: event.target.value })} /></DialogField><DialogField label="工程条件" full><input value={form.engineering} onChange={(event) => setForm({ ...form, engineering: event.target.value })} /></DialogField><DialogField label="物业偏好" full><input value={form.property} onChange={(event) => setForm({ ...form, property: event.target.value })} /></DialogField></form></GlassDialog>}
-    {archiveOpen && <GlassDialog title={selected.name} subtitle="品牌完整档案" onClose={() => setArchiveOpen(false)} wide actions={<><button type="button" onClick={() => setArchiveOpen(false)}>关闭</button><button type="button" className="primaryAction" onClick={() => { setArchiveOpen(false); onNavigate('matching') }}>查看匹配项目</button></>}><BrandArchive brand={selected} /></GlassDialog>}
+    {archiveOpen && selected && <GlassDialog title={selected.name} subtitle="品牌完整档案" onClose={() => setArchiveOpen(false)} wide actions={<><button type="button" onClick={() => setArchiveOpen(false)}>关闭</button><button type="button" className="primaryAction" onClick={() => { setArchiveOpen(false); onNavigate('matching') }}>查看匹配项目</button></>}><BrandArchive brand={selected} /></GlassDialog>}
   </div>
 }
 
@@ -594,7 +616,9 @@ function projectSummary(project) {
 }
 
 function ProjectsPage({ notify }) {
+  const { projects, can } = useAppData()
   const [projectList, setProjectList] = React.useState(projects)
+  React.useEffect(() => { setProjectList(projects) }, [projects])
   const [queryDraft, setQueryDraft] = React.useState('')
   const [query, setQuery] = React.useState('')
   const [city, setCity] = React.useState('重庆市')
@@ -617,7 +641,7 @@ function ProjectsPage({ notify }) {
     notify(`项目“${project.name}”已加入当前清单`)
   }
   return <div className="pageContent resourcePage">
-    <div className="actionBar"><form className="searchBox submitSearchBox" role="search" onSubmit={(event) => { event.preventDefault(); setQuery(queryDraft.trim()) }}><Search size={17} /><input aria-label="搜索项目资源" value={queryDraft} onChange={(e) => setQueryDraft(e.target.value)} placeholder="搜索项目、地区或运营方" /><button type="submit" className="searchSubmit">搜索</button></form><GlassSelect label="城市" value={city} onChange={setCity} options={['重庆市', '全部城市']} /><GlassSelect label="项目类型" value={type} onChange={setType} options={['全部类型', '体育场馆商业', '购物中心', '商业街区', '社区商业']} /><GlassSelect label="项目状态" value={status} onChange={setStatus} options={['全部状态', '招商中', '已开业']} /><button className="primaryAction" type="button" onClick={() => setCreateOpen(true)}><Plus size={16} />新建项目</button></div>
+    <div className="actionBar"><form className="searchBox submitSearchBox" role="search" onSubmit={(event) => { event.preventDefault(); setQuery(queryDraft.trim()) }}><Search size={17} /><input aria-label="搜索项目资源" value={queryDraft} onChange={(e) => setQueryDraft(e.target.value)} placeholder="搜索项目、地区或运营方" /><button type="submit" className="searchSubmit">搜索</button></form><GlassSelect label="城市" value={city} onChange={setCity} options={['重庆市', '全部城市']} /><GlassSelect label="项目类型" value={type} onChange={setType} options={['全部类型', '体育场馆商业', '购物中心', '商业街区', '社区商业']} /><GlassSelect label="项目状态" value={status} onChange={setStatus} options={['全部状态', '招商中', '已开业']} />{can('project:write') && <button className="primaryAction" type="button" onClick={() => setCreateOpen(true)}><Plus size={16} />新建项目</button>}</div>
     <section className="projectCards">{visibleProjects.map((p) => <article className="projectCard" key={p.id}><div className="projectBody"><header className="projectCardHead"><div><h2>{p.name}</h2><p>{projectSummary(p)}</p></div><i className={`grade grade${p.grade}`}>{p.grade}</i></header><div className="tagRow"><span>{p.type}</span><span className="green">{p.status}</span></div><div className="projectMetricVisualGrid"><div className="projectMetricBlock areaMetric"><span>经营面积</span><strong>{p.area}</strong><div className="areaMiniBars"><i /><i /><i /><i /></div></div><div className="projectMetricBlock"><span>综合出租率</span><div className="miniMetricRing" style={{ '--progress': p.occupancy }}><strong>{p.occupancy}</strong></div></div><div className="projectMetricBlock cashMetric"><span>本月收入</span><strong className="incomeValue">{p.revenue}</strong><div className="miniSpark"><i /><i /><i /><i /><i /></div></div><div className="projectMetricBlock cashMetric"><span>本月成本</span><strong className="costValue">{p.cost}</strong><div className="miniSpark cost"><i /><i /><i /><i /><i /></div></div><div className="projectMetricBlock collectionMetric"><div><span>租金收缴率</span><strong>{p.collection}</strong></div><div className="projectCollectionBar"><i style={{ width: p.collection }} /></div></div></div><button className="wideButton" type="button" onClick={() => setArchiveProject(p)}>查看项目经营档案 <ArrowRight size={15} /></button></div></article>)}{visibleProjects.length === 0 && <EmptyState />}</section>
     {createOpen && <GlassDialog title="新建项目" subtitle="录入项目基础资料与经营数据" onClose={() => setCreateOpen(false)} actions={<><button type="button" onClick={() => setCreateOpen(false)}>取消</button><button type="submit" form="project-create-form" className="primaryAction">保存项目</button></>}><form id="project-create-form" className="dialogForm" onSubmit={createProject}><DialogField label="项目名称" full><input required autoFocus value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="请输入项目名称" /></DialogField><DialogField label="项目类型"><select value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value })}><option>体育场馆商业</option><option>购物中心</option><option>商业街区</option><option>社区商业</option></select></DialogField><DialogField label="招商状态"><select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}><option>招商中</option><option>已开业</option></select></DialogField><DialogField label="项目等级"><select value={form.grade} onChange={(event) => setForm({ ...form, grade: event.target.value })}><option>A</option><option>B</option><option>C</option></select></DialogField><DialogField label="经营面积"><input value={form.area} onChange={(event) => setForm({ ...form, area: event.target.value })} /></DialogField><DialogField label="负责人"><input value={form.owner} onChange={(event) => setForm({ ...form, owner: event.target.value })} /></DialogField><DialogField label="综合出租率"><input value={form.occupancy} onChange={(event) => setForm({ ...form, occupancy: event.target.value })} /></DialogField><DialogField label="租金收缴率"><input value={form.collection} onChange={(event) => setForm({ ...form, collection: event.target.value })} /></DialogField><DialogField label="本月收入"><input value={form.revenue} onChange={(event) => setForm({ ...form, revenue: event.target.value })} /></DialogField><DialogField label="本月成本"><input value={form.cost} onChange={(event) => setForm({ ...form, cost: event.target.value })} /></DialogField></form></GlassDialog>}
     {archiveProject && <GlassDialog title={archiveProject.name} subtitle="项目完整档案" onClose={() => setArchiveProject(null)} wide actions={<button type="button" className="primaryAction" onClick={() => setArchiveProject(null)}>关闭档案</button>}><ProjectArchive project={archiveProject} /></GlassDialog>}
@@ -1102,6 +1126,10 @@ function SettingsPage({ notify }) {
 }
 
 export default function App() {
+  return <AppDataProvider><AppShell /></AppDataProvider>
+}
+
+function AppShell() {
   const [current, setCurrent] = React.useState('dashboard')
   const [toast, setToast] = React.useState('')
   const toastTimer = React.useRef()
@@ -1114,7 +1142,7 @@ export default function App() {
   const pages = {
     dashboard: <DashboardPage onNavigate={setCurrent} />, map: <MapPage onNavigate={setCurrent} />, brands: <BrandsPage onNavigate={setCurrent} notify={notify} />,
     projects: <ProjectsPage notify={notify} />, operations: <OperationsPage notify={notify} />, matching: <MatchingPage onNavigate={setCurrent} notify={notify} />, followup: <FollowupPage notify={notify} />,
-    management: <ManagementCenter notify={notify} />, import: <ImportPage notify={notify} />, settings: <SettingsPage notify={notify} />,
+    management: <ManagementCenter notify={notify} onNavigate={setCurrent} />, import: <ImportPage notify={notify} />, settings: <SettingsPage notify={notify} />,
   }
   return <div className="appShell">
     <SideNav current={current} onNavigate={setCurrent} />
